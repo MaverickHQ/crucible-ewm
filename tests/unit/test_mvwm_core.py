@@ -1,7 +1,7 @@
-from services.core.actions import PlaceBuy, PlaceSell
-from services.core.state import RiskLimits, State
-from services.core.transitions import apply_action
-from services.core.verifier import verify_transition
+from ewm_core.actions import PlaceBuy, PlaceSell
+from ewm_core.state import RiskLimits, State
+from ewm_core.transitions import apply_action
+from ewm_core.verifier import verify_transition
 
 
 def test_valid_buy_transition():

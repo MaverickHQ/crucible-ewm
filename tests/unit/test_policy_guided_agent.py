@@ -9,8 +9,8 @@ These tests verify the policy-guided trading agent:
 
 from __future__ import annotations
 
-from services.core.agent import PolicyGuidedAgent
-from services.core.policy import DEFAULT_ACTION
+from ewm_core.agent import PolicyGuidedAgent
+from ewm_core.policy import DEFAULT_ACTION
 
 
 class TestPolicyGuidedAgent:
@@ -235,7 +235,7 @@ class TestPolicyGuidedAgentIntegration:
 
     def test_agent_integration_with_policy_module(self) -> None:
         """Test agent works with evidence policy from policy module."""
-        from services.core.policy import apply_evidence_policy
+        from ewm_core.policy import apply_evidence_policy
 
         # Create a policy
         policy = {

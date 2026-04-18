@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from services.core.learning.replay import (
+from ewm_core.learning.replay import (
     group_by_run,
     iter_trajectory_steps,
     load_learning_dataset,

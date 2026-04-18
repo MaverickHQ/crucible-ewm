@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import logging
 
-from services.core.logging import (
+from ewm_core.logging import (
     StructuredFormatter,
     get_logger,
     log_handler_entry,

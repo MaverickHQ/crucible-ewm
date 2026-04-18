@@ -6,13 +6,13 @@ from typing import Dict, Optional
 
 import boto3
 
-from services.core.artifacts.writer import (
+from ewm_core.artifacts.writer import (
     RunContext,
     serialize_manifest,
     serialize_manifest_from_context,
     serialize_simulation_result,
 )
-from services.core.simulator import SimulationResult
+from ewm_core.simulator import SimulationResult
 
 
 @dataclass

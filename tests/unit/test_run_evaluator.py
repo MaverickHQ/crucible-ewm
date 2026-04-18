@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from services.core.eval.run_evaluator import (
+from ewm_core.eval.run_evaluator import (
     evaluate_run,
     load_run_artifacts,
     write_evaluation,

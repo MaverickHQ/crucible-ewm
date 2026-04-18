@@ -20,7 +20,7 @@ import pytest
 # Add services to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from services.core.learning import (
+from ewm_core.learning import (
     export_learning_dataset,
     iter_trajectory_steps,
     run_stub_learner,

@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from services.core.learning.dataset_export import (
+from ewm_core.learning.dataset_export import (
     export_learning_dataset,
     load_run_manifest,
     load_run_trajectory,

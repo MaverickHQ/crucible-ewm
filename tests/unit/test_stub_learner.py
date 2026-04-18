@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from services.core.learning.stub_learner import (
+from ewm_core.learning.stub_learner import (
     compute_learning_report,
     run_stub_learner,
 )

@@ -1,15 +1,15 @@
 import json
 from pathlib import Path
 
-from services.core.actions import PlaceBuy
-from services.core.artifacts import ArtifactWriter
-from services.core.execution import execute_run
-from services.core.market import MarketPath
-from services.core.persistence import PolicyStore, RunStore, StateStore
-from services.core.planner import MockPlanner, run_planned_simulation
-from services.core.policy.versioning import ensure_policy_metadata
-from services.core.simulator import simulate_plan
-from services.core.state import RiskLimits, State
+from ewm_core.actions import PlaceBuy
+from ewm_core.artifacts import ArtifactWriter
+from ewm_core.execution import execute_run
+from ewm_core.market import MarketPath
+from ewm_core.persistence import PolicyStore, RunStore, StateStore
+from ewm_core.planner import MockPlanner, run_planned_simulation
+from ewm_core.policy.versioning import ensure_policy_metadata
+from ewm_core.simulator import simulate_plan
+from ewm_core.state import RiskLimits, State
 
 
 def test_reject_scenario_writes_artifacts(tmp_path: Path):

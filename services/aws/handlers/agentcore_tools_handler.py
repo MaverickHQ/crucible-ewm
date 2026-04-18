@@ -9,7 +9,7 @@ from typing import Any, Dict, List
 import boto3
 
 from services.aws.adapters.s3_writer import S3ArtifactWriter
-from services.core.agentcore_tools import (
+from ewm_core.agentcore_tools import (
     Budget,
     ToolName,
     ToolRegistry,
@@ -17,11 +17,11 @@ from services.core.agentcore_tools import (
     ToolResult,
     run_tool_loop,
 )
-from services.core.market import MarketPath
-from services.core.simulator import simulate_plan
-from services.core.state import RiskLimits, State
-from services.core.strategy.evaluate import evaluate_signals_with_rationale, signals_to_actions
-from services.core.strategy.load import load_strategy
+from ewm_core.market import MarketPath
+from ewm_core.simulator import simulate_plan
+from ewm_core.state import RiskLimits, State
+from ewm_core.strategy.evaluate import evaluate_signals_with_rationale, signals_to_actions
+from ewm_core.strategy.load import load_strategy
 
 
 def _artifact_keys(run_id: str) -> Dict[str, str]:
@@ -158,11 +158,11 @@ def _build_registry(
         actions = []
         for item in actions_payload:
             if item.get("type") == "PlaceBuy":
-                from services.core.actions import PlaceBuy
+                from ewm_core.actions import PlaceBuy
 
                 actions.append(PlaceBuy(item["symbol"], item["quantity"], 0.0))
             elif item.get("type") == "PlaceSell":
-                from services.core.actions import PlaceSell
+                from ewm_core.actions import PlaceSell
 
                 actions.append(PlaceSell(item["symbol"], item["quantity"], 0.0))
 

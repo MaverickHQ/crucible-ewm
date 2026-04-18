@@ -1,4 +1,4 @@
-from services.core.agentcore_memory.store import DynamoDBMemoryStore
+from ewm_core.agentcore_memory.store import DynamoDBMemoryStore
 
 
 class _FakeDdbClient:

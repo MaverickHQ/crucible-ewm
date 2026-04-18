@@ -8,7 +8,7 @@ from typing import Any, Dict, Optional, Tuple
 import boto3
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-from services.core.agentcore_memory import (
+from ewm_core.agentcore_memory import (
     BedrockAgentCoreMemoryStore,
     DynamoDBMemoryStore,
     InMemoryMemoryStore,
@@ -16,8 +16,8 @@ from services.core.agentcore_memory import (
     MemoryStoreError,
     NoOpMemoryStore,
 )
-from services.core.agentcore_memory.store import estimate_memory_bytes
-from services.core.agentcore_tools import Budget, BudgetState
+from ewm_core.agentcore_memory.store import estimate_memory_bytes
+from ewm_core.agentcore_tools import Budget, BudgetState
 
 
 class MemoryRequest(BaseModel):

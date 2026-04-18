@@ -16,7 +16,7 @@ from pathlib import Path
 
 import pytest
 
-from services.core.environment import MarketPathEnvironment, TradingEnvironment
+from ewm_core.environment import MarketPathEnvironment, TradingEnvironment
 
 # Test fixtures
 SIMPLE_PATH = [

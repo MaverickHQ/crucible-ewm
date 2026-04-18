@@ -7,7 +7,7 @@ concrete implementations can be created.
 
 import pytest
 
-from services.core.environment import BaseEnvironment
+from ewm_core.environment import BaseEnvironment
 
 
 class ConcreteEnvironment(BaseEnvironment):

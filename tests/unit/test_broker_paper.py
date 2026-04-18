@@ -1,6 +1,6 @@
-from services.core.broker.paper import LocalPaperBroker
-from services.core.broker.types import OrderRequest
-from services.core.state import RiskLimits, State
+from ewm_core.broker.paper import LocalPaperBroker
+from ewm_core.broker.types import OrderRequest
+from ewm_core.state import RiskLimits, State
 
 
 def test_paper_broker_deterministic_events() -> None:

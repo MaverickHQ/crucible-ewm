@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from services.core.learning.selector import (
+from ewm_core.learning.selector import (
     load_evaluation_runs,
     select_learning_runs,
 )

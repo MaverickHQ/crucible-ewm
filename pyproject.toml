@@ -1,36 +1,28 @@
 [project]
-name = "beyond-tokens"
-version = "0.8.5"
-requires-python = ">=3.10"
+name = "ewm-core"
+version = "0.1.0"
+requires-python = ">=3.11"
 dependencies = [
-  "pydantic",
-  "boto3",
-  "requests",
-  "certifi",
-  "pytest",
-  "ruff",
+  "pydantic>=2.0",
 ]
 
 [project.optional-dependencies]
-cli = [
-  "requests",
-  "pyyaml",
-  "certifi",
+aws = [
+  "boto3",
 ]
 dev = [
-  "pydantic",
-  "boto3",
-  "requests",
-  "certifi",
   "pytest",
   "ruff",
+  "boto3",
 ]
 
-[project.scripts]
-ewm = "services.cli.main:main"
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["ewm_core*"]
 
-[tool.setuptools]
-packages = ["services"]
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--ignore=tests/integration --ignore=tests/contract"
 
 [tool.ruff]
 line-length = 100

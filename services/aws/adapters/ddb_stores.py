@@ -6,10 +6,10 @@ from typing import Dict, Optional
 
 import boto3
 
-from services.core.actions import PlaceBuy, PlaceSell
-from services.core.simulator import SimulationResult, StepResult
-from services.core.state import RiskLimits, State
-from services.core.verifier import VerificationError
+from ewm_core.actions import PlaceBuy, PlaceSell
+from ewm_core.simulator import SimulationResult, StepResult
+from ewm_core.state import RiskLimits, State
+from ewm_core.verifier import VerificationError
 
 
 @dataclass

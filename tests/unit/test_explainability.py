@@ -1,8 +1,8 @@
-from services.core.actions import PlaceBuy
-from services.core.explain import explain_transition
-from services.core.state import RiskLimits, State
-from services.core.transitions import apply_action
-from services.core.verifier import verify_transition
+from ewm_core.actions import PlaceBuy
+from ewm_core.explain import explain_transition
+from ewm_core.state import RiskLimits, State
+from ewm_core.transitions import apply_action
+from ewm_core.verifier import verify_transition
 
 
 def test_explain_transition_accepts_includes_deltas():

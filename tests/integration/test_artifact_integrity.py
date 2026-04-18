@@ -98,8 +98,8 @@ class TestLocalArtifactIntegrity:
         - manifest.runtime_budgets exists (can be empty dict)
         - manifest.policy_limits exists (can be empty dict)
         """
-        from services.core.agentcore_loop.run import run_agentcore_loop
-        from services.core.agentcore_loop.types import LoopBudgets, LoopRequest
+        from ewm_core.agentcore_loop.run import run_agentcore_loop
+        from ewm_core.agentcore_loop.types import LoopBudgets, LoopRequest
 
         req = LoopRequest(
             budgets=LoopBudgets(max_steps=3),
@@ -339,8 +339,8 @@ def test_artifact_integrity_summary():
 
     # Check if we can run local tests
     try:
-        from services.core.agentcore_loop.run import run_agentcore_loop
-        from services.core.agentcore_loop.types import LoopBudgets, LoopRequest
+        from ewm_core.agentcore_loop.run import run_agentcore_loop
+        from ewm_core.agentcore_loop.types import LoopBudgets, LoopRequest
 
         req = LoopRequest(
             budgets=LoopBudgets(max_steps=1),

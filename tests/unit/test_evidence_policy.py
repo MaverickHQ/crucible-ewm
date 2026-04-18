@@ -15,7 +15,7 @@ from pathlib import Path
 
 import pytest
 
-from services.core.policy import (
+from ewm_core.policy import (
     DEFAULT_ACTION,
     apply_evidence_policy,
     build_evidence_policy_from_learning_report,

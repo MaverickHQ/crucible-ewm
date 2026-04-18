@@ -7,8 +7,8 @@ import boto3
 from botocore.stub import ANY, Stubber
 
 from services.aws.handlers import agentcore_loop_handler
-from services.core.persistence.agentcore_loop_persistence import upload_dir_to_s3
-from services.core.persistence.runs_dynamo import put_run
+from ewm_core.persistence.agentcore_loop_persistence import upload_dir_to_s3
+from ewm_core.persistence.runs_dynamo import put_run
 
 
 def test_upload_dir_to_s3_uploads_recursive(monkeypatch, tmp_path: Path) -> None:
@@ -32,7 +32,7 @@ def test_upload_dir_to_s3_uploads_recursive(monkeypatch, tmp_path: Path) -> None
     stub.activate()
 
     monkeypatch.setattr(
-        "services.core.persistence.agentcore_loop_persistence.boto3.client",
+        "ewm_core.persistence.agentcore_loop_persistence.boto3.client",
         lambda *_: s3,
     )
 

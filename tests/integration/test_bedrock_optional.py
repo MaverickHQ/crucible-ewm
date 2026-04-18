@@ -2,9 +2,9 @@ import os
 
 import pytest
 
-from services.core.planner import BedrockPlanner
-from services.core.policy.versioning import ensure_policy_metadata
-from services.core.state import RiskLimits, State
+from ewm_core.planner import BedrockPlanner
+from ewm_core.policy.versioning import ensure_policy_metadata
+from ewm_core.state import RiskLimits, State
 
 pytestmark = pytest.mark.skipif(
     os.getenv("RUN_BEDROCK_TESTS") != "1",

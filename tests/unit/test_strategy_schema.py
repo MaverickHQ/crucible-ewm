@@ -2,8 +2,8 @@ import json
 
 import pytest
 
-from services.core.strategy.load import load_strategy
-from services.core.strategy.types import StrategySpec
+from ewm_core.strategy.load import load_strategy
+from ewm_core.strategy.types import StrategySpec
 
 
 def test_strategy_schema_valid(tmp_path) -> None:

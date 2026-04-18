@@ -1,6 +1,6 @@
 from services.aws.handlers import agentcore_memory_handler
-from services.core.agentcore_memory import store as memory_store_module
-from services.core.agentcore_memory.store import estimate_memory_bytes
+from ewm_core.agentcore_memory import store as memory_store_module
+from ewm_core.agentcore_memory.store import estimate_memory_bytes
 
 
 class _DummyS3:

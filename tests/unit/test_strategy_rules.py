@@ -1,7 +1,7 @@
-from services.core.market.path import MarketPath
-from services.core.state import RiskLimits, State
-from services.core.strategy.evaluate import evaluate_signals
-from services.core.strategy.types import (
+from ewm_core.market.path import MarketPath
+from ewm_core.state import RiskLimits, State
+from ewm_core.strategy.evaluate import evaluate_signals
+from ewm_core.strategy.types import (
     MeanReversionRule,
     Signal,
     SmaCrossoverRule,

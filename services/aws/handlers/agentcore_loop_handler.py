@@ -7,9 +7,9 @@ from datetime import datetime, timezone
 from typing import Any
 from uuid import uuid4
 
-from services.core.agentcore_loop.run import run_agentcore_loop
-from services.core.agentcore_loop.types import LoopBudgets, LoopRequest
-from services.core.persistence.runs_dynamo import put_run
+from ewm_core.agentcore_loop.run import run_agentcore_loop
+from ewm_core.agentcore_loop.types import LoopBudgets, LoopRequest
+from ewm_core.persistence.runs_dynamo import put_run
 
 NAMESPACE = "BeyondTokens/AgentCoreLoop"
 SERVICE = "beyond-tokens"

@@ -1,8 +1,8 @@
-from services.core.actions import PlaceBuy
-from services.core.loop.formatting import render_execution_row
-from services.core.loop.run import _execution_rows_for_actions
-from services.core.loop.types import ExecutionRow
-from services.core.state import RiskLimits, State
+from ewm_core.actions import PlaceBuy
+from ewm_core.loop.formatting import render_execution_row
+from ewm_core.loop.run import _execution_rows_for_actions
+from ewm_core.loop.types import ExecutionRow
+from ewm_core.state import RiskLimits, State
 
 
 def test_execution_row_formatting() -> None:

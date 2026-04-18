@@ -1,9 +1,9 @@
 from pathlib import Path
 
-from services.core.market import MarketPath
-from services.core.planner import MockPlanner, run_planned_simulation
-from services.core.policy.versioning import ensure_policy_metadata
-from services.core.state import RiskLimits, State
+from ewm_core.market import MarketPath
+from ewm_core.planner import MockPlanner, run_planned_simulation
+from ewm_core.policy.versioning import ensure_policy_metadata
+from ewm_core.state import RiskLimits, State
 
 
 def _base_state():

@@ -4,7 +4,7 @@ import json
 import os
 
 from services.aws.adapters.ddb_stores import DdbRunStore, DdbStateStore
-from services.core.execution import execute_run
+from ewm_core.execution import execute_run
 
 
 def handler(event, context):

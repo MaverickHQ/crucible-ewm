@@ -1,4 +1,4 @@
-from services.core.market import generate_market_path
+from ewm_core.market import generate_market_path
 
 
 def test_market_generator_determinism() -> None:

@@ -1,5 +1,5 @@
-from services.core.agentcore_loop.run import run_agentcore_loop
-from services.core.agentcore_loop.types import LoopBudgets, LoopRequest
+from ewm_core.agentcore_loop.run import run_agentcore_loop
+from ewm_core.agentcore_loop.types import LoopBudgets, LoopRequest
 
 
 def test_loop_rejects_nonzero_model_budget() -> None:

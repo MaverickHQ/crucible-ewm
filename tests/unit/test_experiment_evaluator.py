@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from services.core.eval.experiment_evaluator import (
+from ewm_core.eval.experiment_evaluator import (
     evaluate_experiment,
     load_experiment_runs,
     write_experiment_evaluation,

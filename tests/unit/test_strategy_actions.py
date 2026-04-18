@@ -1,7 +1,7 @@
-from services.core.actions.types import PlaceBuy, PlaceSell
-from services.core.state.models import State
-from services.core.strategy.evaluate import signals_to_actions
-from services.core.strategy.types import (
+from ewm_core.actions.types import PlaceBuy, PlaceSell
+from ewm_core.state.models import State
+from ewm_core.strategy.evaluate import signals_to_actions
+from ewm_core.strategy.types import (
     Signal,
     StrategyMetadata,
     StrategySizing,

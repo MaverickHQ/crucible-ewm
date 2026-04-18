@@ -1,5 +1,5 @@
-from services.core.deltas import compute_state_delta
-from services.core.state import RiskLimits, State
+from ewm_core.deltas import compute_state_delta
+from ewm_core.state import RiskLimits, State
 
 
 def test_compute_state_delta_for_buy():

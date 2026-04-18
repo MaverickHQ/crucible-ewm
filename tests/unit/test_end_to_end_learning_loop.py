@@ -11,13 +11,13 @@ from pathlib import Path
 
 import pytest
 
-from services.core.agent import PolicyGuidedAgent
-from services.core.learning import (
+from ewm_core.agent import PolicyGuidedAgent
+from ewm_core.learning import (
     export_learning_dataset,
     run_stub_learner,
     select_learning_runs,
 )
-from services.core.policy import (
+from ewm_core.policy import (
     build_evidence_policy_from_learning_report,
     load_evidence_policy,
 )

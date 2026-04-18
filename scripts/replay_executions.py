@@ -9,8 +9,8 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from services.core.broker.types import ExecutionEvent
-from services.core.loop.formatting import (
+from ewm_core.broker.types import ExecutionEvent
+from ewm_core.loop.formatting import (
     render_execution_events,
     render_execution_row,
     render_execution_table,
@@ -43,7 +43,7 @@ def render_table(rows: list[dict], events: list[ExecutionEvent]) -> None:
 
 
 def _row_to_execution(row: dict):
-    from services.core.loop.types import ExecutionRow
+    from ewm_core.loop.types import ExecutionRow
 
     return ExecutionRow(
         step_index=row["step_index"],

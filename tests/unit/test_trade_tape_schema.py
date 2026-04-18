@@ -1,4 +1,4 @@
-from services.core.observability import TapeRow
+from ewm_core.observability import TapeRow
 
 
 def test_tape_row_schema() -> None:

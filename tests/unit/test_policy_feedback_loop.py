@@ -11,9 +11,9 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from services.core.learning.dataset_export import export_learning_dataset
-from services.core.learning.stub_learner import run_stub_learner
-from services.core.policy import (
+from ewm_core.learning.dataset_export import export_learning_dataset
+from ewm_core.learning.stub_learner import run_stub_learner
+from ewm_core.policy import (
     apply_evidence_policy,
     build_evidence_policy_from_learning_report,
     load_evidence_policy,

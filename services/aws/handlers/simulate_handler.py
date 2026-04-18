@@ -7,12 +7,12 @@ from typing import Any, Dict, List
 
 from services.aws.adapters.ddb_stores import DdbPolicyStore, DdbRunStore, DdbStateStore
 from services.aws.adapters.s3_writer import S3ArtifactWriter
-from services.core.actions import PlaceBuy, PlaceSell
-from services.core.market import MarketPath
-from services.core.planner import BedrockPlanner, MockPlanner
-from services.core.policy.versioning import ensure_policy_metadata
-from services.core.simulator import simulate_plan
-from services.core.state import RiskLimits, State
+from ewm_core.actions import PlaceBuy, PlaceSell
+from ewm_core.market import MarketPath
+from ewm_core.planner import BedrockPlanner, MockPlanner
+from ewm_core.policy.versioning import ensure_policy_metadata
+from ewm_core.simulator import simulate_plan
+from ewm_core.state import RiskLimits, State
 
 
 def _load_fixture() -> MarketPath:

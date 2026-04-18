@@ -94,8 +94,8 @@ class TestLocalBudgetEnforcement:
         EXPECTED BEHAVIOR: The loop should execute at most 1 step when max_steps=1.
         This test verifies the fix for: runtime_budgets.max_steps is now enforced.
         """
-        from services.core.agentcore_loop.run import run_agentcore_loop
-        from services.core.agentcore_loop.types import LoopBudgets, LoopRequest
+        from ewm_core.agentcore_loop.run import run_agentcore_loop
+        from ewm_core.agentcore_loop.types import LoopBudgets, LoopRequest
 
         req = LoopRequest(
             budgets=LoopBudgets(max_steps=1),
@@ -126,8 +126,8 @@ class TestLocalBudgetEnforcement:
         This test confirms backward compatibility: legacy budgets.max_steps should work
         the same as runtime_budgets.max_steps.
         """
-        from services.core.agentcore_loop.run import run_agentcore_loop
-        from services.core.agentcore_loop.types import LoopBudgets, LoopRequest
+        from ewm_core.agentcore_loop.run import run_agentcore_loop
+        from ewm_core.agentcore_loop.types import LoopBudgets, LoopRequest
 
         # Use LoopBudgets (which is the legacy internal representation)
         # This tests backward compatibility
@@ -158,8 +158,8 @@ class TestLocalBudgetEnforcement:
         loop. This test verifies that max_tool_calls=0 is accepted and the 
         loop succeeds with tool_calls metric being 0 or not present.
         """
-        from services.core.agentcore_loop.run import run_agentcore_loop
-        from services.core.agentcore_loop.types import LoopBudgets, LoopRequest
+        from ewm_core.agentcore_loop.run import run_agentcore_loop
+        from ewm_core.agentcore_loop.types import LoopBudgets, LoopRequest
 
         req = LoopRequest(
             budgets=LoopBudgets(max_tool_calls=0),
@@ -186,8 +186,8 @@ class TestLocalBudgetEnforcement:
         The reactive loop (agentcore-loop) does NOT make model calls - it 
         executes a predetermined strategy. This is the expected behavior.
         """
-        from services.core.agentcore_loop.run import run_agentcore_loop
-        from services.core.agentcore_loop.types import LoopBudgets, LoopRequest
+        from ewm_core.agentcore_loop.run import run_agentcore_loop
+        from ewm_core.agentcore_loop.types import LoopBudgets, LoopRequest
 
         req = LoopRequest(
             budgets=LoopBudgets(max_model_calls=0),
@@ -209,8 +209,8 @@ class TestLocalBudgetEnforcement:
         The reactive loop should reject any nonzero model calls because it 
         doesn't make LLM calls - it's a deterministic strategy execution.
         """
-        from services.core.agentcore_loop.run import run_agentcore_loop
-        from services.core.agentcore_loop.types import LoopBudgets, LoopRequest
+        from ewm_core.agentcore_loop.run import run_agentcore_loop
+        from ewm_core.agentcore_loop.types import LoopBudgets, LoopRequest
 
         req = LoopRequest(
             budgets=LoopBudgets(max_model_calls=1),  # Nonzero should fail
@@ -236,8 +236,8 @@ class TestLocalBudgetEnforcement:
         
         Note: Artifacts are stored in artifact_dir/artifacts/<run_id>/ not directly in artifact_dir
         """
-        from services.core.agentcore_loop.run import run_agentcore_loop
-        from services.core.agentcore_loop.types import LoopBudgets, LoopRequest
+        from ewm_core.agentcore_loop.run import run_agentcore_loop
+        from ewm_core.agentcore_loop.types import LoopBudgets, LoopRequest
 
         req = LoopRequest(
             budgets=LoopBudgets(max_steps=1),

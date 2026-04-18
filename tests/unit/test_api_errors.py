@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from services.core.errors import (
+from ewm_core.errors import (
     APIError,
     create_error_response,
     create_internal_error,

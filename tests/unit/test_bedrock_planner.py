@@ -1,6 +1,6 @@
 import pytest
 
-from services.core.planner.bedrock import _action_from_payload, parse_bedrock_plan
+from ewm_core.planner.bedrock import _action_from_payload, parse_bedrock_plan
 
 
 def test_parse_bedrock_plan_accepts_valid_payload():

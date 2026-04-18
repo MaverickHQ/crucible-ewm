@@ -9,7 +9,7 @@ Per openspec/specs/api/spec.md:
 from __future__ import annotations
 
 from services.aws.handlers.health_handler import handler as health_handler
-from services.core.errors import create_error_response, create_validation_error
+from ewm_core.errors import create_error_response, create_validation_error
 
 
 class TestHealthEndpointContract:

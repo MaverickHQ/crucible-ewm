@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from services.core.agentcore_loop.run import run_agentcore_loop
-from services.core.agentcore_loop.types import LoopBudgets, LoopRequest
+from ewm_core.agentcore_loop.run import run_agentcore_loop
+from ewm_core.agentcore_loop.types import LoopBudgets, LoopRequest
 
 
 def test_planner_disabled_returns_no_plan(monkeypatch) -> None:

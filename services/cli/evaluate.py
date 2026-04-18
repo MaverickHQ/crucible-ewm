@@ -7,7 +7,7 @@ import json
 import sys
 from pathlib import Path
 
-from services.core.eval.run_evaluator import (
+from ewm_core.eval.run_evaluator import (
     evaluate_run,
     load_run_artifacts,
     write_evaluation,
@@ -198,7 +198,7 @@ def experiment_evaluate_placeholder(args: argparse.Namespace) -> int:
             2 -> any integrity errors exist OR experiment integrity failure
             1 -> unexpected runtime exception
     """
-    from services.core.eval.experiment_evaluator import (
+    from ewm_core.eval.experiment_evaluator import (
         evaluate_experiment,
         write_experiment_evaluation,
     )
