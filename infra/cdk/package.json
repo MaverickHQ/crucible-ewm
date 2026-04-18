@@ -1,0 +1,20 @@
+{
+  "name": "beyond-tokens-cdk",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "synth": "cdk synth",
+    "deploy": "cdk deploy",
+    "diff": "cdk diff"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "^2.0.0",
+    "constructs": "^10.0.0"
+  },
+  "devDependencies": {
+    "aws-cdk": "^2.1106.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.2",
+    "@types/node": "^22.10.1"
+  }
+}

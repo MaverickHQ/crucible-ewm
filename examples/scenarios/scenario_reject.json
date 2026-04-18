@@ -1,0 +1,7 @@
+{
+  "name": "scenario_reject",
+  "plan": [
+    {"type": "PlaceBuy", "symbol": "AAPL", "quantity": 1},
+    {"type": "PlaceBuy", "symbol": "AAPL", "quantity": 20}
+  ]
+}

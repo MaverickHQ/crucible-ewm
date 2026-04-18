@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+.venv/
+.env/
+.env
+*.log
+tmp/
+
+# Pytest
+.pytest_cache/
+
+# Ruff
+.ruff_cache/
+
+# Node
+node_modules/
+package-lock.json
+npm-debug.log*
+
+# CDK
+cdk.out/
+infra/cdk/cdk-outputs.json
+
+# OS
+.DS_Store
+
+# Internal spec workflow (not public)
+openspec/
+examples/experiments/
+
+experiment_results.jsonl
+summary.csv
+tmp/
+
+# Internal spec workflow (not public)
+openspec/
+
+tests/unit/test_artifacts_manifest.py
+tests/unit/test_cli_experiment.py
+
+services/cli/experiment.py

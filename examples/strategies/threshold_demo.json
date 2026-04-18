@@ -1,0 +1,32 @@
+{
+  "metadata": {
+    "name": "Threshold Demo",
+    "version": "1.0",
+    "description": "Simple threshold BUY/SELL example for AAPL/MSFT."
+  },
+  "universe": {
+    "symbols": ["AAPL", "MSFT"]
+  },
+  "timing": {
+    "evaluation_frequency_steps": 1
+  },
+  "sizing": {
+    "max_position_qty_per_symbol": 5,
+    "order_qty": 1,
+    "max_new_exposure_per_step": 300
+  },
+  "rules": [
+    {
+      "type": "threshold_price",
+      "symbol": "AAPL",
+      "buy_below": 100.0,
+      "sell_above": 103.0
+    },
+    {
+      "type": "threshold_price",
+      "symbol": "MSFT",
+      "buy_below": 197.0,
+      "sell_above": 205.0
+    }
+  ]
+}

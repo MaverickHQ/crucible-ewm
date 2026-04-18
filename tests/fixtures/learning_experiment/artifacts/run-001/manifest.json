@@ -1,0 +1,8 @@
+{
+  "manifest_version": "2",
+  "run_id": "run-001",
+  "mode": "trading",
+  "symbols": ["AAPL", "MSFT"],
+  "runtime_version": "0.8.4",
+  "strategy_path": "examples/strategies/threshold_demo.json"
+}

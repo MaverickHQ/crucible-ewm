@@ -1,0 +1,32 @@
+{
+  "metadata": {
+    "name": "SMA Crossover Demo",
+    "version": "1.0",
+    "description": "Short/long SMA crossover on AAPL/MSFT."
+  },
+  "universe": {
+    "symbols": ["AAPL", "MSFT"]
+  },
+  "timing": {
+    "evaluation_frequency_steps": 1
+  },
+  "sizing": {
+    "max_position_qty_per_symbol": 4,
+    "order_qty": 1,
+    "max_new_exposure_per_step": 300
+  },
+  "rules": [
+    {
+      "type": "sma_crossover",
+      "symbol": "AAPL",
+      "short_window": 2,
+      "long_window": 4
+    },
+    {
+      "type": "sma_crossover",
+      "symbol": "MSFT",
+      "short_window": 2,
+      "long_window": 4
+    }
+  ]
+}

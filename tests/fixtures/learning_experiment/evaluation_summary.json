@@ -1,0 +1,39 @@
+{
+  "aggregate": {
+    "avg_steps_executed": 4.0,
+    "max_steps_executed": 5,
+    "min_steps_executed": 3,
+    "pct_integrity_fail": 0.0,
+    "pct_truncated_by_budget": 0.0,
+    "runs_with_integrity_errors": 0,
+    "runs_without_integrity_errors": 2,
+    "total_runs": 2
+  },
+  "integrity": {
+    "artifact_dirs_found": 2,
+    "experiment_dir_exists": true,
+    "integrity_errors": [],
+    "results_jsonl_present": true
+  },
+  "runs": [
+    {
+      "run_id": "run-001",
+      "manifest_valid": true,
+      "integrity_errors": [],
+      "steps_executed": 5,
+      "truncated_by_budget": false
+    },
+    {
+      "run_id": "run-002",
+      "manifest_valid": true,
+      "integrity_errors": [],
+      "steps_executed": 3,
+      "truncated_by_budget": false
+    }
+  ],
+  "summary": {
+    "failed_runs": 0,
+    "ok_runs": 2,
+    "total_runs": 2
+  }
+}

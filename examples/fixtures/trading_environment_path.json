@@ -1,0 +1,36 @@
+{
+  "description": "Deterministic market path for TradingEnvironment demo and tests",
+  "symbols": ["AAPL", "MSFT"],
+  "steps": [
+    {
+      "timestamp": "2024-01-02T09:30:00Z",
+      "AAPL": 185.50,
+      "MSFT": 370.25,
+      "volume": 1000000
+    },
+    {
+      "timestamp": "2024-01-02T09:31:00Z",
+      "AAPL": 185.75,
+      "MSFT": 371.00,
+      "volume": 950000
+    },
+    {
+      "timestamp": "2024-01-02T09:32:00Z",
+      "AAPL": 185.25,
+      "MSFT": 370.50,
+      "volume": 1100000
+    },
+    {
+      "timestamp": "2024-01-02T09:33:00Z",
+      "AAPL": 186.00,
+      "MSFT": 372.25,
+      "volume": 1050000
+    },
+    {
+      "timestamp": "2024-01-02T09:34:00Z",
+      "AAPL": 186.50,
+      "MSFT": 373.00,
+      "volume": 1200000
+    }
+  ]
+}

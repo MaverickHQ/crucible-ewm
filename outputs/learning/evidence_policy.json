@@ -1,0 +1,21 @@
+{
+  "action_preferences_by_step": {
+    "0": "hold",
+    "1": "buy",
+    "2": "hold",
+    "3": "sell",
+    "4": "hold"
+  },
+  "action_preferences_by_symbol": {
+    "AAPL": "hold",
+    "MSFT": "hold"
+  },
+  "default_action": "hold",
+  "environment_type": "trading",
+  "evidence_runs": 2,
+  "generated_from": "outputs/learning/demo_learning_report.json",
+  "thresholds": {
+    "max_step_position": 5,
+    "min_runs_for_confidence": 1
+  }
+}

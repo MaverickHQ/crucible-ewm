@@ -1,0 +1,40 @@
+[project]
+name = "beyond-tokens"
+version = "0.8.5"
+requires-python = ">=3.10"
+dependencies = [
+  "pydantic",
+  "boto3",
+  "requests",
+  "certifi",
+  "pytest",
+  "ruff",
+]
+
+[project.optional-dependencies]
+cli = [
+  "requests",
+  "pyyaml",
+  "certifi",
+]
+dev = [
+  "pydantic",
+  "boto3",
+  "requests",
+  "certifi",
+  "pytest",
+  "ruff",
+]
+
+[project.scripts]
+ewm = "services.cli.main:main"
+
+[tool.setuptools]
+packages = ["services"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]

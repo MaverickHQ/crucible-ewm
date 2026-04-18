@@ -1,0 +1,7 @@
+[
+  {"observation": {"step": 0, "prices": {"AAPL": 100.0, "MSFT": 200.0}}, "action": {"type": "hold"}, "next_observation": {"step": 1, "prices": {"AAPL": 101.0, "MSFT": 201.0}}, "done": false},
+  {"observation": {"step": 1, "prices": {"AAPL": 101.0, "MSFT": 201.0}}, "action": {"type": "buy", "symbol": "AAPL"}, "next_observation": {"step": 2, "prices": {"AAPL": 102.0, "MSFT": 202.0}}, "done": false},
+  {"observation": {"step": 2, "prices": {"AAPL": 102.0, "MSFT": 202.0}}, "action": {"type": "hold"}, "next_observation": {"step": 3, "prices": {"AAPL": 103.0, "MSFT": 203.0}}, "done": false},
+  {"observation": {"step": 3, "prices": {"AAPL": 103.0, "MSFT": 203.0}}, "action": {"type": "sell", "symbol": "AAPL"}, "next_observation": {"step": 4, "prices": {"AAPL": 104.0, "MSFT": 204.0}}, "done": false},
+  {"observation": {"step": 4, "prices": {"AAPL": 104.0, "MSFT": 204.0}}, "action": {"type": "hold"}, "next_observation": {"step": 5, "prices": {"AAPL": 105.0, "MSFT": 205.0}}, "done": true}
+]

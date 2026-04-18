@@ -1,0 +1,34 @@
+{
+  "metadata": {
+    "name": "Mean Reversion Demo",
+    "version": "1.0",
+    "description": "Mean reversion z-score strategy on AAPL/MSFT."
+  },
+  "universe": {
+    "symbols": ["AAPL", "MSFT"]
+  },
+  "timing": {
+    "evaluation_frequency_steps": 1
+  },
+  "sizing": {
+    "max_position_qty_per_symbol": 4,
+    "order_qty": 1,
+    "max_new_exposure_per_step": 300
+  },
+  "rules": [
+    {
+      "type": "mean_reversion_zscore",
+      "symbol": "AAPL",
+      "window": 3,
+      "z_buy_below": -0.5,
+      "z_sell_above": 0.5
+    },
+    {
+      "type": "mean_reversion_zscore",
+      "symbol": "MSFT",
+      "window": 3,
+      "z_buy_below": -0.5,
+      "z_sell_above": 0.5
+    }
+  ]
+}

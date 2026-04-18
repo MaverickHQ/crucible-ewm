@@ -1,0 +1,66 @@
+{
+  "_metadata": {
+    "dataset_path": "outputs/learning/demo_trajectories.jsonl",
+    "output_path": "outputs/learning/demo_learning_report.json"
+  },
+  "action_counts": {
+    "buy": 2,
+    "hold": 4,
+    "sell": 2
+  },
+  "action_proportions": {
+    "buy": 0.25,
+    "hold": 0.5,
+    "sell": 0.25
+  },
+  "average_steps_per_run": 4.0,
+  "heuristics": {
+    "most_common_action": {
+      "count": 4,
+      "type": "hold"
+    },
+    "most_common_action_by_symbol": {
+      "AAPL": {
+        "action": "hold",
+        "count": 4
+      },
+      "MSFT": {
+        "action": "hold",
+        "count": 4
+      }
+    },
+    "step_position_actions": {
+      "0": {
+        "action": "hold",
+        "count": 1
+      },
+      "1": {
+        "action": "buy",
+        "count": 1
+      },
+      "2": {
+        "action": "hold",
+        "count": 1
+      },
+      "3": {
+        "action": "sell",
+        "count": 1
+      },
+      "4": {
+        "action": "hold",
+        "count": 1
+      }
+    }
+  },
+  "integrity_summary": {
+    "invalid_rows": 0,
+    "valid_rows": 8,
+    "validity_rate": 1.0
+  },
+  "symbol_counts": {
+    "AAPL": 8,
+    "MSFT": 8
+  },
+  "total_runs": 2,
+  "total_steps": 8
+}
