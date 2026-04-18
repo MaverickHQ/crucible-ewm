@@ -12,6 +12,11 @@ dependencies = [
 aws = [
   "boto3",
 ]
+dashboard = [
+  "streamlit>=1.35",
+  "plotly>=5.20",
+  "yfinance>=0.2",
+]
 dev = [
   "pytest",
   "ruff",
