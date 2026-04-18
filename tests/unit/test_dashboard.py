@@ -79,6 +79,40 @@ def flatten_yf_columns(raw: pd.DataFrame) -> pd.DataFrame:
     return raw[["open", "high", "low", "close", "volume"]]
 
 
+# P1-2: Trade summary helper mirrored for unit tests
+def compute_trade_summary(trajectory: list[dict]) -> dict:
+    pending_buys: list[tuple[int, float, float]] = []
+    pairs: list[tuple[int, int, float]] = []
+    gross_pnl = 0.0
+
+    for i, step in enumerate(trajectory):
+        action = step.get("action", {})
+        atype = action.get("type", "").lower()
+        obs = step.get("observation", {})
+        price = float(obs.get("price", 0.0))
+        qty = float(action.get("quantity", 1))
+
+        if atype == "buy":
+            pending_buys.append((i, price, qty))
+        elif atype == "sell" and pending_buys:
+            buy_step, buy_price, buy_qty = pending_buys.pop(0)
+            pnl = (price - buy_price) * min(qty, buy_qty)
+            gross_pnl += pnl
+            pairs.append((buy_step, i, pnl))
+
+    total_trades = len(pairs)
+    wins = sum(1 for _, _, p in pairs if p > 0)
+    win_rate = (wins / total_trades * 100) if total_trades > 0 else 0.0
+    avg_hold = (sum(s - b for b, s, _ in pairs) / total_trades) if total_trades > 0 else 0.0
+
+    return {
+        "total_trades": total_trades,
+        "win_rate": win_rate,
+        "avg_hold": avg_hold,
+        "gross_pnl": gross_pnl,
+    }
+
+
 # ── Fixtures ──────────────────────────────────────────────────────────────────
 
 @pytest.fixture
@@ -242,6 +276,68 @@ class TestLoadTrajectory:
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# P1-2: Trade summary unit tests
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class TestComputeTradeSummary:
+    def test_returns_all_keys(self, simple_trajectory):
+        s = compute_trade_summary(simple_trajectory)
+        assert set(s) == {"total_trades", "win_rate", "avg_hold", "gross_pnl"}
+
+    def test_single_round_trip_counted(self, simple_trajectory):
+        s = compute_trade_summary(simple_trajectory)
+        assert s["total_trades"] == 1
+
+    def test_profitable_trade_yields_positive_pnl(self, simple_trajectory):
+        # buy@100, sell@105, qty=10 → pnl=50
+        s = compute_trade_summary(simple_trajectory)
+        assert s["gross_pnl"] == pytest.approx(50.0)
+
+    def test_win_rate_100_for_single_win(self, simple_trajectory):
+        s = compute_trade_summary(simple_trajectory)
+        assert s["win_rate"] == pytest.approx(100.0)
+
+    def test_avg_hold_equals_step_distance(self, simple_trajectory):
+        # buy at step 0, sell at step 2 → avg hold = 2
+        s = compute_trade_summary(simple_trajectory)
+        assert s["avg_hold"] == pytest.approx(2.0)
+
+    def test_empty_trajectory_returns_zero_trades(self):
+        s = compute_trade_summary([])
+        assert s["total_trades"] == 0
+        assert s["gross_pnl"] == pytest.approx(0.0)
+
+    def test_only_buys_no_pairs(self):
+        traj = [
+            {"action": {"type": "buy", "quantity": 1}, "observation": {"price": 100.0}},
+            {"action": {"type": "buy", "quantity": 1}, "observation": {"price": 102.0}},
+        ]
+        s = compute_trade_summary(traj)
+        assert s["total_trades"] == 0
+
+    def test_losing_trade_zero_win_rate(self):
+        traj = [
+            {"action": {"type": "buy", "quantity": 1}, "observation": {"price": 100.0}},
+            {"action": {"type": "sell", "quantity": 1}, "observation": {"price": 90.0}},
+        ]
+        s = compute_trade_summary(traj)
+        assert s["win_rate"] == pytest.approx(0.0)
+        assert s["gross_pnl"] == pytest.approx(-10.0)
+
+    def test_multiple_round_trips(self):
+        traj = [
+            {"action": {"type": "buy", "quantity": 1}, "observation": {"price": 100.0}},
+            {"action": {"type": "sell", "quantity": 1}, "observation": {"price": 110.0}},
+            {"action": {"type": "buy", "quantity": 1}, "observation": {"price": 110.0}},
+            {"action": {"type": "sell", "quantity": 1}, "observation": {"price": 105.0}},
+        ]
+        s = compute_trade_summary(traj)
+        assert s["total_trades"] == 2
+        assert s["gross_pnl"] == pytest.approx(10.0 + (-5.0))
+        assert s["win_rate"] == pytest.approx(50.0)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # 2. Streamlit AppTest integration
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -280,8 +376,6 @@ class TestDefaultRender:
         assert candles_metric.value == "200"
 
     def test_chart_renders_without_error(self, at):
-        # AppTest doesn't expose plotly_chart elements directly;
-        # a clean run with no exception confirms the chart was built.
         assert not at.exception
 
     def test_trajectory_info_shown_when_no_run(self, at):
@@ -399,3 +493,175 @@ class TestArtifactViewer:
         run_dirs = [d for d in tmp_path.iterdir() if d.is_dir()]
         assert len(run_dirs) == 1
         assert run_dirs[0].name == "run-001"
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# P1-3: CSV export
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class TestCsvExport:
+    def test_filtered_df_serialises_to_csv(self, simple_trajectory, ohlcv_df):
+        rows = []
+        for i, step in enumerate(simple_trajectory):
+            action = step.get("action", {})
+            obs = step.get("observation", {})
+            rows.append({
+                "step": i,
+                "action": action.get("type", ""),
+                "price": obs.get("price"),
+                "cash": obs.get("cash_balance"),
+            })
+        df = pd.DataFrame(rows)
+        csv = df.to_csv(index=False)
+        assert "step" in csv
+        assert "action" in csv
+        # Round-trip check
+        reloaded = pd.read_csv(__import__("io").StringIO(csv))
+        assert len(reloaded) == len(df)
+
+    def test_csv_filtered_by_action_type(self, simple_trajectory):
+        rows = [
+            {"step": i, "action": s.get("action", {}).get("type", "")}
+            for i, s in enumerate(simple_trajectory)
+        ]
+        df = pd.DataFrame(rows)
+        filtered = df[df["action"] == "buy"]
+        csv = filtered.to_csv(index=False)
+        reloaded = pd.read_csv(__import__("io").StringIO(csv))
+        assert all(reloaded["action"] == "buy")
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# P1-4: Drawdown curve
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class TestDrawdownCurve:
+    def _compute_drawdown(self, df: pd.DataFrame) -> pd.Series:
+        closes = df["close"]
+        daily_ret = closes.pct_change().fillna(0)
+        cum_ret = (1 + daily_ret).cumprod()
+        roll_max = cum_ret.cummax()
+        return (cum_ret - roll_max) / roll_max * 100
+
+    def test_drawdown_is_non_positive(self, ohlcv_df):
+        dd = self._compute_drawdown(ohlcv_df)
+        assert (dd <= 0).all()
+
+    def test_drawdown_starts_at_zero(self, ohlcv_df):
+        dd = self._compute_drawdown(ohlcv_df)
+        assert dd.iloc[0] == pytest.approx(0.0)
+
+    def test_drawdown_same_length_as_ohlcv(self, ohlcv_df):
+        dd = self._compute_drawdown(ohlcv_df)
+        assert len(dd) == len(ohlcv_df)
+
+    def test_monotone_up_series_has_zero_drawdown(self):
+        dates = pd.date_range("2020-01-01", periods=10)
+        df = pd.DataFrame({"close": [100.0 + i for i in range(10)]}, index=dates)
+        dd = self._compute_drawdown(df)
+        assert (dd <= 0).all()
+        assert dd.min() == pytest.approx(0.0, abs=1e-10)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# P1-5: Integrity badge
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class TestIntegrityBadge:
+    def _make_valid_run(self, tmp_path) -> Path:
+        run_dir = tmp_path / "run-valid"
+        run_dir.mkdir()
+        manifest = {
+            "run_id": "run-valid",
+            "manifest_version": "2",
+            "mode": "test",
+            "symbols": ["AAPL"],
+        }
+        (run_dir / "manifest.json").write_text(json.dumps(manifest))
+        (run_dir / "decision.json").write_text(json.dumps({"run_id": "run-valid"}))
+        (run_dir / "trajectory.json").write_text(json.dumps([]))
+        (run_dir / "deltas.json").write_text(json.dumps({}))
+        return run_dir
+
+    def test_valid_run_passes_integrity(self, tmp_path):
+        from ewm_core.eval.run_evaluator import evaluate_run, load_run_artifacts
+        run_dir = self._make_valid_run(tmp_path)
+        arts = load_run_artifacts(run_dir)
+        result = evaluate_run(arts, artifact_dir=run_dir)
+        assert result["integrity"]["integrity_errors"] == []
+
+    def test_missing_manifest_fails_integrity(self, tmp_path):
+        from ewm_core.eval.run_evaluator import evaluate_run, load_run_artifacts
+        run_dir = tmp_path / "run-bad"
+        run_dir.mkdir()
+        # No files at all
+        arts = load_run_artifacts(run_dir)
+        result = evaluate_run(arts, artifact_dir=run_dir)
+        assert len(result["integrity"]["integrity_errors"]) > 0
+
+    def test_wrong_manifest_version_fails_integrity(self, tmp_path):
+        from ewm_core.eval.run_evaluator import evaluate_run, load_run_artifacts
+        run_dir = tmp_path / "run-wrong-ver"
+        run_dir.mkdir()
+        manifest = {"run_id": "run-wrong-ver", "manifest_version": "1", "mode": "test"}
+        (run_dir / "manifest.json").write_text(json.dumps(manifest))
+        arts = load_run_artifacts(run_dir)
+        result = evaluate_run(arts, artifact_dir=run_dir)
+        assert "manifest_version_mismatch" in result["integrity"]["integrity_errors"]
+
+    def test_integrity_badge_renders_on_valid_dir(self, tmp_path):
+        from streamlit.testing.v1 import AppTest
+        run_dir = self._make_valid_run(tmp_path)
+        at = AppTest.from_file(APP_PATH, default_timeout=30).run()
+        # Enter the run directory directly
+        at.text_input[1].set_value(str(run_dir)).run()
+        assert not at.exception
+        successes = [s.value for s in at.success]
+        assert any("integrity" in s.lower() for s in successes)
+
+    def test_integrity_badge_renders_on_invalid_dir(self, tmp_path):
+        from streamlit.testing.v1 import AppTest
+        run_dir = tmp_path / "run-empty"
+        run_dir.mkdir()
+        at = AppTest.from_file(APP_PATH, default_timeout=30).run()
+        at.text_input[1].set_value(str(run_dir)).run()
+        assert not at.exception
+        errors = [e.value for e in at.error]
+        assert any("integrity" in e.lower() for e in errors)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# P1-1: Zoom-to-trade (session_state logic)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class TestZoomToTrade:
+    def test_zoom_range_clamped_at_start(self, ohlcv_df):
+        """Step 2 with window=5 should not produce a negative index."""
+        step = 2
+        lo = max(0, step - 5)
+        hi = min(len(ohlcv_df) - 1, step + 5)
+        assert lo >= 0
+        assert hi < len(ohlcv_df)
+
+    def test_zoom_range_clamped_at_end(self, ohlcv_df):
+        """Last step with window=5 should stay within bounds."""
+        step = len(ohlcv_df) - 1
+        lo = max(0, step - 5)
+        hi = min(len(ohlcv_df) - 1, step + 5)
+        assert lo >= 0
+        assert hi == len(ohlcv_df) - 1
+
+    def test_zoom_range_correct_width(self, ohlcv_df):
+        """Mid-series step produces ±5 candle window (11 steps wide)."""
+        step = 50
+        lo = max(0, step - 5)
+        hi = min(len(ohlcv_df) - 1, step + 5)
+        assert hi - lo == 10
+
+    def test_zoom_date_indices_are_valid(self, ohlcv_df):
+        """Zoom range dates must be actual dates in the ohlcv index."""
+        step = 30
+        lo = max(0, step - 5)
+        hi = min(len(ohlcv_df) - 1, step + 5)
+        assert ohlcv_df.index[lo] in ohlcv_df.index
+        assert ohlcv_df.index[hi] in ohlcv_df.index

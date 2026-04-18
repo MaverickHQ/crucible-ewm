@@ -12,6 +12,7 @@ import streamlit as st
 import yfinance as yf
 from plotly.subplots import make_subplots
 
+from ewm_core.eval.run_evaluator import evaluate_run, load_run_artifacts
 from ewm_core.market.synthetic import generate_ohlcv
 
 # ── Page config ───────────────────────────────────────────────────────────────
@@ -74,6 +75,19 @@ with st.sidebar:
         artifact_dir = st.text_input(
             "Or enter run directory directly", placeholder="/path/to/run-id/"
         )
+
+    # P1-5: Integrity check badge
+    if artifact_dir and Path(artifact_dir).exists():
+        try:
+            _arts = load_run_artifacts(Path(artifact_dir))
+            _eval = evaluate_run(_arts, artifact_dir=Path(artifact_dir))
+            _errors = _eval["integrity"]["integrity_errors"]
+            if not _errors:
+                st.success("Integrity: PASS")
+            else:
+                st.error(f"Integrity: FAIL ({len(_errors)} error(s))")
+        except Exception:
+            st.warning("Integrity: could not evaluate")
 
 # ── Market data ───────────────────────────────────────────────────────────────
 
@@ -182,6 +196,41 @@ def _extract_pnl(trajectory: list[dict]) -> pd.Series:
     return pd.Series(cash, dtype=float)
 
 
+# P1-2: Trade summary helper
+def _compute_trade_summary(trajectory: list[dict]) -> dict:
+    """Compute trade-level summary stats via FIFO buy/sell pairing."""
+    pending_buys: list[tuple[int, float, float]] = []  # (step, price, qty)
+    pairs: list[tuple[int, int, float]] = []  # (buy_step, sell_step, pnl)
+    gross_pnl = 0.0
+
+    for i, step in enumerate(trajectory):
+        action = step.get("action", {})
+        atype = action.get("type", "").lower()
+        obs = step.get("observation", {})
+        price = float(obs.get("price", 0.0))
+        qty = float(action.get("quantity", 1))
+
+        if atype == "buy":
+            pending_buys.append((i, price, qty))
+        elif atype == "sell" and pending_buys:
+            buy_step, buy_price, buy_qty = pending_buys.pop(0)
+            pnl = (price - buy_price) * min(qty, buy_qty)
+            gross_pnl += pnl
+            pairs.append((buy_step, i, pnl))
+
+    total_trades = len(pairs)
+    wins = sum(1 for _, _, p in pairs if p > 0)
+    win_rate = (wins / total_trades * 100) if total_trades > 0 else 0.0
+    avg_hold = (sum(s - b for b, s, _ in pairs) / total_trades) if total_trades > 0 else 0.0
+
+    return {
+        "total_trades": total_trades,
+        "win_rate": win_rate,
+        "avg_hold": avg_hold,
+        "gross_pnl": gross_pnl,
+    }
+
+
 trajectory: list[dict] = []
 if artifact_dir:
     trajectory = _load_trajectory(artifact_dir)
@@ -189,17 +238,38 @@ if artifact_dir:
 buy_signals, sell_signals = _extract_signals(trajectory, ohlcv)
 pnl_series = _extract_pnl(trajectory)
 
+# P1-2: Trade summary card (shown only when a run is loaded)
+if trajectory:
+    summary = _compute_trade_summary(trajectory)
+    with st.expander("Trade summary", expanded=True):
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric("Round trips", summary["total_trades"])
+        c2.metric("Win rate", f"{summary['win_rate']:.1f}%")
+        c3.metric("Avg hold (steps)", f"{summary['avg_hold']:.1f}")
+        c4.metric("Gross P&L", f"${summary['gross_pnl']:+.2f}")
+
 # ── Chart ─────────────────────────────────────────────────────────────────────
 
 has_pnl = not pnl_series.empty
 
+# P1-4: Drawdown series
+closes = ohlcv["close"]
+daily_ret = closes.pct_change().fillna(0)
+cum_ret = (1 + daily_ret).cumprod()
+roll_max = cum_ret.cummax()
+drawdown_pct = (cum_ret - roll_max) / roll_max * 100
+
 fig = make_subplots(
-    rows=2,
+    rows=3,
     cols=1,
     shared_xaxes=True,
-    row_heights=[0.75, 0.25],
+    row_heights=[0.60, 0.20, 0.20],
     vertical_spacing=0.02,
-    specs=[[{"secondary_y": True}], [{"secondary_y": False}]],
+    specs=[
+        [{"secondary_y": True}],
+        [{"secondary_y": False}],
+        [{"secondary_y": False}],
+    ],
 )
 
 # Candlesticks
@@ -292,18 +362,42 @@ fig.add_trace(
     row=2, col=1,
 )
 
+# P1-4: Drawdown subplot
+fig.add_trace(
+    go.Scatter(
+        x=ohlcv.index,
+        y=drawdown_pct,
+        name="Drawdown",
+        fill="tozeroy",
+        line=dict(color="#ef5350", width=1),
+        fillcolor="rgba(239,83,80,0.2)",
+        showlegend=False,
+    ),
+    row=3, col=1,
+)
+
 fig.update_layout(
     title=chart_title,
     xaxis_rangeslider_visible=False,
-    height=580,
+    height=650,
     margin=dict(l=0, r=0, t=40, b=0),
     template="plotly_white",
     legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
 )
 fig.update_yaxes(title_text="Price", row=1, col=1, secondary_y=False)
 if has_pnl:
-    fig.update_yaxes(title_text="Cash balance ($)", row=1, col=1, secondary_y=True)
+    fig.update_yaxes(title_text="Cash ($)", row=1, col=1, secondary_y=True)
 fig.update_yaxes(title_text="Volume", row=2, col=1)
+fig.update_yaxes(title_text="Drawdown %", row=3, col=1)
+
+# P1-1: Zoom-to-trade — apply stored zoom range to chart
+zoom_range: list | None = None
+if "zoom_step" in st.session_state:
+    step = st.session_state["zoom_step"]
+    lo = max(0, step - 5)
+    hi = min(len(ohlcv) - 1, step + 5)
+    zoom_range = [str(ohlcv.index[lo]), str(ohlcv.index[hi])]
+    fig.update_xaxes(range=zoom_range)
 
 st.plotly_chart(fig, width="stretch")
 
@@ -329,7 +423,7 @@ if trajectory:
         )
     traj_df = pd.DataFrame(rows)
 
-    col_filter, col_spacer = st.columns([2, 5])
+    col_filter, col_export, col_spacer = st.columns([2, 2, 3])
     with col_filter:
         action_filter = st.multiselect(
             "Filter by action",
@@ -337,6 +431,15 @@ if trajectory:
             default=traj_df["action"].unique().tolist(),
         )
     filtered = traj_df[traj_df["action"].isin(action_filter)]
+
+    # P1-3: CSV export
+    with col_export:
+        st.download_button(
+            label="Download CSV",
+            data=filtered.to_csv(index=False),
+            file_name="trajectory.csv",
+            mime="text/csv",
+        )
 
     event = st.dataframe(
         filtered,
@@ -348,8 +451,10 @@ if trajectory:
 
     selected_rows = event.selection.get("rows", [])
     if selected_rows:
-        idx = filtered.iloc[selected_rows[0]]["step"]
-        st.json(trajectory[int(idx)])
+        idx = int(filtered.iloc[selected_rows[0]]["step"])
+        # P1-1: Store selected step for zoom-to-trade on next rerun
+        st.session_state["zoom_step"] = idx
+        st.json(trajectory[idx])
 else:
     st.info("No trajectory loaded. Select a run in the sidebar.")
 
