@@ -305,7 +305,7 @@ if has_pnl:
     fig.update_yaxes(title_text="Cash balance ($)", row=1, col=1, secondary_y=True)
 fig.update_yaxes(title_text="Volume", row=2, col=1)
 
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, width="stretch")
 
 # ── Trajectory table ──────────────────────────────────────────────────────────
 
@@ -340,7 +340,7 @@ if trajectory:
 
     event = st.dataframe(
         filtered,
-        use_container_width=True,
+        width="stretch",
         hide_index=True,
         on_select="rerun",
         selection_mode="single-row",
