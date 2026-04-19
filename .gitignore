@@ -1,3 +1,14 @@
+# Build artefacts
+dist/
+build/
+
+# Claude session data
+.claude/
+
+# Credentials / keys
+*.pem
+*.key
+
 # Python
 __pycache__/
 *.py[cod]

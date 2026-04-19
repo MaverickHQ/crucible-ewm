@@ -1,10 +1,30 @@
-# Executable World Models
+# ewm-core — Executable World Models
 
-### Agent runtimes that execute, evaluate, and learn — on AWS
+### Part of the Crucible project
 
 This repository accompanies the **[Executable World Models](https://harveygill.substack.com/p/building-the-runtime-for-agent-based)** essay series published on Substack. It is the companion to the **[Beyond Tokens](https://github.com/MaverickHQ/beyond-tokens)** series, which established why world models matter. This series builds them.
 
 ![Executable World Models — release roadmap](./docs/executable_world_models_readme.png)
+
+---
+
+## Install
+
+```
+pip install ewm-core
+```
+
+## Live demo
+
+[Dashboard](STREAMLIT_URL_PLACEHOLDER) — synthetic market replay, trajectory viewer, artifact inspector
+
+## Quick start
+
+```python
+from ewm_core.environment import MarketPathEnvironment
+from ewm_core.eval import evaluate_artifact
+from ewm_core.learning import build_evidence_policy
+```
 
 ---
 
@@ -42,6 +62,7 @@ This series follows directly from [Beyond Tokens](https://github.com/MaverickHQ/
 
 | Essay | What it covers |
 |---|---|
+| [What the dashboard reveals](ESSAY_URL_PLACEHOLDER) | Phase 1 bridge — making agent behaviour visible |
 | [From Theory to Runtime](https://harveygill.substack.com/p/building-the-runtime-for-agent-based) | The Agent Runtime goes live on AWS — execution, artifacts, persistence, telemetry |
 | [Evaluation Is a Primitive, Not a Report](https://harveygill.substack.com/p/evaluation-is-a-primitive-not-a-report) | Structural validation that turns runs into trusted evidence |
 | [Tools Return Results. Environments Change the World.](https://harveygill.substack.com/p/tools-skills-and-the-missing-layer) | Why environments are the missing layer in most agent architectures |
@@ -177,9 +198,9 @@ pytest tests/integration
 ## Repository structure
 
 ```
-services/core/environment/   world environments — MarketPathEnvironment
-services/core/eval/          structural evaluation layer
-services/core/learning/      evidence policy and learning scaffold
+ewm_core/environment/        world environments — MarketPathEnvironment
+ewm_core/eval/               structural evaluation layer
+ewm_core/learning/           evidence policy and learning scaffold
 services/cli/                operational CLI
 
 scripts/                     demos, export tools, and policy builders
@@ -198,6 +219,15 @@ outputs/learning/            experiment datasets and policy outputs
 3. Run `python3 scripts/demo_policy_guided_trading_agent.py` and observe decisions being guided by prior evidence
 4. Open any `decision.json` artifact — the decision, trajectory, and state deltas are all explicit and inspectable
 5. The model does not change. The system improves through architecture.
+
+---
+
+## Crucible project
+
+ewm-core is the foundation layer of the Crucible research project — three repos, three essays, two domains.
+- [crucible-ewm](https://github.com/MaverickHQ/crucible-ewm) — this repo
+- [crucible-player-coach](https://github.com/MaverickHQ/crucible-player-coach) — adversarial quality loop (Phase 3)
+- [crucible-autoresearcher](https://github.com/MaverickHQ/crucible-autoresearcher) — meta-loop improvement (Phase 4)
 
 ---
 
