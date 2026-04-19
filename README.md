@@ -16,7 +16,7 @@ pip install ewm-core
 
 ## Live demo
 
-[Dashboard](STREAMLIT_URL_PLACEHOLDER) — synthetic market replay, trajectory viewer, artifact inspector
+[Dashboard](https://crucible-ewm.streamlit.app) — synthetic market replay, trajectory viewer, artifact inspector
 
 ## Quick start
 
