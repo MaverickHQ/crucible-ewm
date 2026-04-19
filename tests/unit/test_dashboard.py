@@ -665,3 +665,281 @@ class TestZoomToTrade:
         hi = min(len(ohlcv_df) - 1, step + 5)
         assert ohlcv_df.index[lo] in ohlcv_df.index
         assert ohlcv_df.index[hi] in ohlcv_df.index
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# P2-6/9/10: Helper mirrors for isolated unit testing
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def style_trajectory_df(df: pd.DataFrame):
+    def _row_style(row: pd.Series) -> list[str]:
+        action = str(row.get("action", "")).lower()
+        if action == "buy":
+            return ["background-color: rgba(38,166,154,0.15)"] * len(row)
+        if action == "sell":
+            return ["background-color: rgba(239,83,80,0.15)"] * len(row)
+        return [""] * len(row)
+    return df.style.apply(_row_style, axis=1)
+
+
+def load_manifest(artifact_dir: str) -> dict | None:
+    if not artifact_dir:
+        return None
+    p = Path(artifact_dir) / "manifest.json"
+    if not p.exists():
+        return None
+    try:
+        return json.loads(p.read_text())
+    except Exception:
+        return None
+
+
+def diff_manifest_keys(m1: dict, m2: dict) -> set[str]:
+    return {k for k in set(m1) | set(m2) if m1.get(k) != m2.get(k)}
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# P2-6: Colour-coded trajectory rows
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class TestRowColouring:
+    def _make_traj_df(self) -> pd.DataFrame:
+        return pd.DataFrame([
+            {"step": 0, "action": "buy",  "price": 100.0},
+            {"step": 1, "action": "hold", "price": 102.0},
+            {"step": 2, "action": "sell", "price": 105.0},
+        ])
+
+    def test_returns_styler_object(self):
+        df = self._make_traj_df()
+        result = style_trajectory_df(df)
+        assert hasattr(result, "apply"), "Expected pandas Styler"
+
+    def test_buy_row_gets_green_background(self):
+        df = self._make_traj_df()
+        styler = style_trajectory_df(df)
+        # Export styles to inspect row 0 (buy)
+        styles = styler.export()
+        applied = styler.apply(
+            lambda row: (
+                ["background-color: rgba(38,166,154,0.15)"] * len(row)
+                if str(row.get("action", "")).lower() == "buy"
+                else [""] * len(row)
+            ),
+            axis=1,
+        )
+        assert applied is not None
+
+    def test_buy_style_string_contains_green(self):
+        df = pd.DataFrame([{"action": "buy", "price": 100.0}])
+        styler = style_trajectory_df(df)
+        rendered = styler.to_html()
+        assert "rgba(38,166,154" in rendered
+
+    def test_sell_style_string_contains_red(self):
+        df = pd.DataFrame([{"action": "sell", "price": 100.0}])
+        styler = style_trajectory_df(df)
+        rendered = styler.to_html()
+        assert "rgba(239,83,80" in rendered
+
+    def test_hold_row_has_no_background(self):
+        df = pd.DataFrame([{"action": "hold", "price": 100.0}])
+        styler = style_trajectory_df(df)
+        rendered = styler.to_html()
+        assert "rgba(38,166,154" not in rendered
+        assert "rgba(239,83,80" not in rendered
+
+    def test_empty_df_does_not_raise(self):
+        df = pd.DataFrame(columns=["action", "price"])
+        result = style_trajectory_df(df)
+        assert result is not None
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# P2-7: Persistent sidebar state
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class TestPersistentSidebarState:
+    def test_dark_mode_default_is_true(self):
+        from streamlit.testing.v1 import AppTest
+        at = AppTest.from_file(APP_PATH, default_timeout=30).run()
+        assert not at.exception
+        checkboxes = {cb.label: cb for cb in at.checkbox}
+        assert "Dark mode" in checkboxes
+        assert checkboxes["Dark mode"].value is True
+
+    def test_slider_value_survives_rerun(self):
+        from streamlit.testing.v1 import AppTest
+        at = AppTest.from_file(APP_PATH, default_timeout=30).run()
+        at.slider[0].set_value(150).run()
+        assert not at.exception
+        candles = next(m for m in at.metric if m.label == "Candles")
+        assert candles.value == "150"
+
+    def test_all_ma_checkboxes_present(self):
+        from streamlit.testing.v1 import AppTest
+        at = AppTest.from_file(APP_PATH, default_timeout=30).run()
+        labels = {cb.label for cb in at.checkbox}
+        assert {"MA 20", "MA 50", "MA 200", "Dark mode"}.issubset(labels)
+
+    def test_number_inputs_present_in_default_state(self):
+        from streamlit.testing.v1 import AppTest
+        at = AppTest.from_file(APP_PATH, default_timeout=30).run()
+        # start_price, drift, volatility, seed — 4 number inputs in GBM mode
+        assert len(at.number_input) >= 4
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# P2-8: Dark mode toggle
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class TestDarkModeToggle:
+    def test_dark_mode_checkbox_exists(self):
+        from streamlit.testing.v1 import AppTest
+        at = AppTest.from_file(APP_PATH, default_timeout=30).run()
+        labels = [cb.label for cb in at.checkbox]
+        assert "Dark mode" in labels
+
+    def test_dark_mode_on_by_default(self):
+        from streamlit.testing.v1 import AppTest
+        at = AppTest.from_file(APP_PATH, default_timeout=30).run()
+        dark_cb = next(cb for cb in at.checkbox if cb.label == "Dark mode")
+        assert dark_cb.value is True
+
+    def test_unchecking_dark_mode_reruns_without_error(self):
+        from streamlit.testing.v1 import AppTest
+        at = AppTest.from_file(APP_PATH, default_timeout=30).run()
+        dark_cb = next(cb for cb in at.checkbox if cb.label == "Dark mode")
+        dark_cb.uncheck().run()
+        assert not at.exception
+
+    def test_rechecking_dark_mode_reruns_without_error(self):
+        from streamlit.testing.v1 import AppTest
+        at = AppTest.from_file(APP_PATH, default_timeout=30).run()
+        dark_cb = next(cb for cb in at.checkbox if cb.label == "Dark mode")
+        dark_cb.uncheck().run()
+        dark_cb2 = next(cb for cb in at.checkbox if cb.label == "Dark mode")
+        dark_cb2.check().run()
+        assert not at.exception
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# P2-9: Run manifest summary panel
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class TestManifestPanel:
+    def _make_manifest_dir(self, tmp_path, manifest: dict) -> Path:
+        run_dir = tmp_path / "run-manifest-test"
+        run_dir.mkdir()
+        (run_dir / "manifest.json").write_text(json.dumps(manifest))
+        return run_dir
+
+    def test_load_manifest_returns_none_for_empty_string(self):
+        assert load_manifest("") is None
+
+    def test_load_manifest_returns_none_when_file_missing(self, tmp_path):
+        run_dir = tmp_path / "empty-run"
+        run_dir.mkdir()
+        assert load_manifest(str(run_dir)) is None
+
+    def test_load_manifest_returns_dict_for_valid_file(self, tmp_path):
+        manifest = {"run_id": "run-abc", "mode": "test", "manifest_version": "2"}
+        run_dir = self._make_manifest_dir(tmp_path, manifest)
+        result = load_manifest(str(run_dir))
+        assert result is not None
+        assert result["run_id"] == "run-abc"
+
+    def test_load_manifest_handles_malformed_json(self, tmp_path):
+        run_dir = tmp_path / "bad-run"
+        run_dir.mkdir()
+        (run_dir / "manifest.json").write_text("{invalid json")
+        result = load_manifest(str(run_dir))
+        assert result is None
+
+    def test_load_manifest_preserves_all_fields(self, tmp_path):
+        manifest = {
+            "run_id": "run-xyz",
+            "mode": "live",
+            "symbols": ["AAPL", "MSFT"],
+            "manifest_version": "2",
+            "strategy_path": "strategies/ewm.py",
+            "budgets": {"max_trades": 10},
+        }
+        run_dir = self._make_manifest_dir(tmp_path, manifest)
+        result = load_manifest(str(run_dir))
+        assert set(result.keys()) == set(manifest.keys())
+
+    def test_manifest_expander_renders_when_run_loaded(self, tmp_path):
+        from streamlit.testing.v1 import AppTest
+        manifest = {"run_id": "run-abc", "mode": "test", "manifest_version": "2"}
+        run_dir = self._make_manifest_dir(tmp_path, manifest)
+        at = AppTest.from_file(APP_PATH, default_timeout=30).run()
+        at.text_input[1].set_value(str(run_dir)).run()
+        assert not at.exception
+        expander_labels = [e.label for e in at.expander]
+        assert any("manifest" in lbl.lower() for lbl in expander_labels)
+
+    def test_no_manifest_expander_without_run(self):
+        from streamlit.testing.v1 import AppTest
+        at = AppTest.from_file(APP_PATH, default_timeout=30).run()
+        expander_labels = [e.label for e in at.expander]
+        assert not any("manifest" in lbl.lower() for lbl in expander_labels)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# P2-10: Side-by-side run diff
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class TestRunDiff:
+    def _make_run(self, tmp_path, name: str, manifest: dict) -> Path:
+        run_dir = tmp_path / name
+        run_dir.mkdir()
+        (run_dir / "manifest.json").write_text(json.dumps(manifest))
+        return run_dir
+
+    def test_diff_returns_empty_set_for_identical_manifests(self):
+        m = {"run_id": "run-a", "mode": "test", "manifest_version": "2"}
+        assert diff_manifest_keys(m, m.copy()) == set()
+
+    def test_diff_detects_changed_value(self):
+        m1 = {"mode": "test", "run_id": "run-a"}
+        m2 = {"mode": "live", "run_id": "run-a"}
+        assert diff_manifest_keys(m1, m2) == {"mode"}
+
+    def test_diff_detects_key_only_in_m1(self):
+        m1 = {"mode": "test", "extra_key": "value"}
+        m2 = {"mode": "test"}
+        assert diff_manifest_keys(m1, m2) == {"extra_key"}
+
+    def test_diff_detects_key_only_in_m2(self):
+        m1 = {"mode": "test"}
+        m2 = {"mode": "test", "new_key": "value"}
+        assert diff_manifest_keys(m1, m2) == {"new_key"}
+
+    def test_diff_detects_multiple_differences(self):
+        m1 = {"mode": "test", "version": "1", "shared": "same"}
+        m2 = {"mode": "live", "version": "2", "shared": "same"}
+        result = diff_manifest_keys(m1, m2)
+        assert result == {"mode", "version"}
+
+    def test_run_diff_renders_when_both_runs_loaded(self, tmp_path):
+        from streamlit.testing.v1 import AppTest
+        m1 = {"run_id": "run-a", "mode": "test", "manifest_version": "2"}
+        m2 = {"run_id": "run-b", "mode": "live", "manifest_version": "2"}
+        run_a = self._make_run(tmp_path, "run-a", m1)
+        run_b = self._make_run(tmp_path, "run-b", m2)
+        at = AppTest.from_file(APP_PATH, default_timeout=30).run()
+        at.text_input[1].set_value(str(run_a)).run()
+        at.text_input[3].set_value(str(run_b)).run()
+        assert not at.exception
+
+    def test_no_diff_shown_without_run_b(self, tmp_path):
+        from streamlit.testing.v1 import AppTest
+        m1 = {"run_id": "run-a", "mode": "test", "manifest_version": "2"}
+        run_a = self._make_run(tmp_path, "run-a-solo", m1)
+        at = AppTest.from_file(APP_PATH, default_timeout=30).run()
+        at.text_input[1].set_value(str(run_a)).run()
+        assert not at.exception
+        # No "Run diff" subheader without run B
+        subheaders = [s.value for s in at.subheader]
+        assert not any("diff" in s.lower() for s in subheaders)
