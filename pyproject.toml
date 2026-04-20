@@ -1,6 +1,6 @@
 [project]
 name = "ewm-core"
-version = "0.1.0"
+version = "0.2.0"
 description = "Observable trajectory infrastructure — trading domain reference implementation"
 readme = "README.md"
 license = "MIT"

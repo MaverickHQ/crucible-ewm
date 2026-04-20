@@ -12,6 +12,28 @@ This repository accompanies the **[Executable World Models](https://harveygill.s
 
 ```
 pip install ewm-core
+pip install ewm-core[llm]   # includes Anthropic SDK for LLM agent
+```
+
+## Agent modes
+
+| Mode | Requires | Model |
+|---|---|---|
+| Rule-based agent | Nothing — default | — |
+| LLM agent | `ANTHROPIC_API_KEY` env var | `claude-haiku-4-5-20251001` |
+
+The LLM agent receives a market observation (price, SMA5, SMA10, volume, position) and returns a `buy / sell / hold` decision with a `reasoning` field.
+
+```python
+from ewm_core.agents import LLMAgent
+
+agent = LLMAgent()  # reads ANTHROPIC_API_KEY from environment
+decision = agent.decide({
+    "symbol": "AAPL", "price": 182.5,
+    "sma5": 183.1, "sma10": 180.2,
+    "volume": 52_000_000, "position": "flat",
+})
+# {"type": "buy", "qty": 1, "source": "llm", "reasoning": "..."}
 ```
 
 ## Live demo

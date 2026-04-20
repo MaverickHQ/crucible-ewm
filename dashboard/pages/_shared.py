@@ -51,6 +51,10 @@ SS_DEFAULTS: dict = {
     "_prev_gbm_preset":   "Custom",
     "experiment_root":    "",
     "zoom_step":          None,
+    "agent_mode":             "Rule-based",
+    "llm_authenticated":      False,
+    "llm_calls_this_session": 0,
+    "llm_last_decision":      None,
 }
 
 

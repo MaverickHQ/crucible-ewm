@@ -90,6 +90,34 @@ with st.sidebar:
     st.subheader("Display")
     dark_mode = st.checkbox("Dark mode", value=True, key="dark_mode")
 
+    st.divider()
+    st.subheader("Agent mode")
+    try:
+        _has_llm = "DEMO_PASSWORD" in st.secrets
+    except Exception:
+        _has_llm = False
+    _agent_options = ["Rule-based", "Claude LLM agent (demo)"] if _has_llm else ["Rule-based"]
+    st.radio("Agent", options=_agent_options, key="agent_mode")
+
+    if st.session_state.get("agent_mode") == "Claude LLM agent (demo)":
+        if not st.session_state.get("llm_authenticated"):
+            _pw = st.text_input("Demo password", type="password", key="_llm_pw_input")
+            if _pw:
+                try:
+                    _ok = _pw == st.secrets["DEMO_PASSWORD"]
+                except Exception:
+                    _ok = False
+                if _ok:
+                    st.session_state["llm_authenticated"] = True
+                    st.rerun()
+                else:
+                    st.error("Incorrect password.")
+        else:
+            _calls = st.session_state.get("llm_calls_this_session", 0)
+            st.caption(f"Calls this session: {_calls} / 10")
+            if _calls >= 10:
+                st.warning("Session limit reached. `pip install ewm-core[llm]` to run locally.")
+
     if not use_live:
         st.divider()
         st.subheader("Compare GBM")
@@ -443,3 +471,59 @@ st.plotly_chart(fig, width="stretch", config={
     "modeBarButtonsToRemove": ["select2d", "lasso2d", "autoScale2d"],
     "toImageButtonOptions": {"format": "png", "filename": "ewm_chart"},
 })
+
+# ── LLM agent decision ────────────────────────────────────────────────────────
+
+if st.session_state.get("agent_mode") == "Claude LLM agent (demo)":
+    if not st.session_state.get("llm_authenticated"):
+        st.info("Enter the demo password in the sidebar to enable the LLM agent.")
+    elif st.session_state.get("llm_calls_this_session", 0) >= 10:
+        st.warning(
+            "Session limit reached. `pip install ewm-core[llm]` to run locally."
+        )
+    else:
+        try:
+            from ewm_core.agents.llm_agent import LLMAgent  # noqa: PLC0415
+            _symbol = st.session_state.get("ticker", "SYN") if use_live else "SYN"
+            _sma5   = float(ohlcv["close"].rolling(5).mean().iloc[-1])
+            _sma10  = float(ohlcv["close"].rolling(10).mean().iloc[-1])
+            _obs = {
+                "symbol":   _symbol,
+                "price":    float(ohlcv["close"].iloc[-1]),
+                "sma5":     _sma5,
+                "sma10":    _sma10,
+                "volume":   float(ohlcv["volume"].iloc[-1]),
+                "position": "flat",
+            }
+            if st.button("Get Claude's decision", key="llm_decide_btn"):
+                try:
+                    _api_key = st.secrets.get("ANTHROPIC_API_KEY")
+                except Exception:
+                    _api_key = None
+                try:
+                    _agent = LLMAgent(api_key=_api_key)
+                    _result = _agent.decide(_obs)
+                    st.session_state["llm_last_decision"] = _result
+                    st.session_state["llm_calls_this_session"] = (
+                        st.session_state.get("llm_calls_this_session", 0) + 1
+                    )
+                    st.rerun()
+                except Exception as exc:
+                    st.error(f"LLM call failed: {exc}")
+        except ImportError:
+            st.info(
+                "LLM agent not available in this deployment. "
+                "`pip install ewm-core[llm]` to enable."
+            )
+
+    _last = st.session_state.get("llm_last_decision")
+    if _last:
+        _action = _last.get("type", "hold")
+        _color  = TV_GREEN if _action == "buy" else TV_RED if _action == "sell" else TV_MUTED
+        st.markdown(
+            f'<p style="font-size:13px;font-weight:600;margin-top:8px;">'
+            f'Claude\'s action: <span style="color:{_color};">{_action.upper()}</span></p>',
+            unsafe_allow_html=True,
+        )
+        with st.expander("Claude's reasoning", expanded=True):
+            st.write(_last.get("reasoning", "—"))
