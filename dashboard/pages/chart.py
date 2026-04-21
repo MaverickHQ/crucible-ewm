@@ -204,25 +204,15 @@ with st.sidebar:
 
 @st.cache_data(ttl=300)
 def _fetch_live(ticker: str, start: str, end: str) -> pd.DataFrame:
-    try:
-        raw = yf.download(
-            ticker, start=start, end=end,
-            auto_adjust=True, progress=False,
-            show_errors=False,
-        )
-    except Exception:
-        return pd.DataFrame()
-    if raw is None or raw.empty:
+    raw = yf.download(ticker, start=start, end=end,
+                      auto_adjust=True, progress=False)
+    if raw.empty:
         return pd.DataFrame()
     if isinstance(raw.columns, pd.MultiIndex):
         raw.columns = [c[0].lower() for c in raw.columns]
     else:
         raw.columns = [c.lower() for c in raw.columns]
-    needed = ["open", "high", "low", "close", "volume"]
-    missing = [c for c in needed if c not in raw.columns]
-    if missing:
-        return pd.DataFrame()
-    return raw[needed].dropna()
+    return raw[["open", "high", "low", "close", "volume"]]
 
 
 @st.cache_data
