@@ -55,6 +55,8 @@ SS_DEFAULTS: dict = {
     "llm_authenticated":      False,
     "llm_calls_this_session": 0,
     "llm_last_decision":      None,
+    "llm_thinking":           False,
+    "llm_params_hash":        "",
 }
 
 

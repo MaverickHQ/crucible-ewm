@@ -6,6 +6,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 
+import hashlib
+
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
@@ -36,6 +38,43 @@ with st.sidebar:
     st.markdown("### EWM-Core")
     st.divider()
 
+    st.subheader("Agent mode")
+    try:
+        _has_llm = "DEMO_PASSWORD" in st.secrets
+    except Exception:
+        _has_llm = False
+    _agent_options = ["Rule-based", "Claude LLM agent (demo)"] if _has_llm else ["Rule-based"]
+    st.radio("Agent", options=_agent_options, key="agent_mode")
+
+    if st.session_state.get("agent_mode") == "Claude LLM agent (demo)":
+        if not st.session_state.get("llm_authenticated"):
+            _pw = st.text_input("Demo password", type="password", key="_llm_pw_input")
+            if _pw:
+                try:
+                    _ok = _pw == st.secrets["DEMO_PASSWORD"]
+                except Exception:
+                    _ok = False
+                if _ok:
+                    st.session_state["llm_authenticated"] = True
+                    st.rerun()
+                else:
+                    st.error("Incorrect password.")
+        else:
+            _calls = st.session_state.get("llm_calls_this_session", 0)
+            if _calls <= 7:
+                st.markdown(
+                    f'<p style="color:#26a69a;font-size:11px;margin:2px 0;">Calls: {_calls} / 10</p>',
+                    unsafe_allow_html=True,
+                )
+            elif _calls <= 9:
+                st.markdown(
+                    f'<p style="color:#ff9800;font-size:11px;margin:2px 0;">Calls: {_calls} / 10 — running low</p>',
+                    unsafe_allow_html=True,
+                )
+            else:
+                st.error("Session limit reached (10/10). `pip install ewm-core[llm]` to run locally.")
+
+    st.divider()
     st.subheader("Data source")
     use_live = st.toggle("Live data (yfinance)", key="use_live")
 
@@ -89,34 +128,6 @@ with st.sidebar:
     st.divider()
     st.subheader("Display")
     dark_mode = st.checkbox("Dark mode", value=True, key="dark_mode")
-
-    st.divider()
-    st.subheader("Agent mode")
-    try:
-        _has_llm = "DEMO_PASSWORD" in st.secrets
-    except Exception:
-        _has_llm = False
-    _agent_options = ["Rule-based", "Claude LLM agent (demo)"] if _has_llm else ["Rule-based"]
-    st.radio("Agent", options=_agent_options, key="agent_mode")
-
-    if st.session_state.get("agent_mode") == "Claude LLM agent (demo)":
-        if not st.session_state.get("llm_authenticated"):
-            _pw = st.text_input("Demo password", type="password", key="_llm_pw_input")
-            if _pw:
-                try:
-                    _ok = _pw == st.secrets["DEMO_PASSWORD"]
-                except Exception:
-                    _ok = False
-                if _ok:
-                    st.session_state["llm_authenticated"] = True
-                    st.rerun()
-                else:
-                    st.error("Incorrect password.")
-        else:
-            _calls = st.session_state.get("llm_calls_this_session", 0)
-            st.caption(f"Calls this session: {_calls} / 10")
-            if _calls >= 10:
-                st.warning("Session limit reached. `pip install ewm-core[llm]` to run locally.")
 
     if not use_live:
         st.divider()
@@ -244,6 +255,21 @@ if use_live:
 else:
     ohlcv = _fetch_synthetic(n_candles, start_price, drift, volatility, seed)
     chart_title = f"Synthetic GBM  ·  {len(ohlcv)} candles  ·  seed {seed}"
+
+# ── Clear stale LLM result when market params change ─────────────────────────
+
+if use_live:
+    _phash = hashlib.md5(
+        f"{st.session_state.get('ticker')}:{st.session_state.get('date_range')}".encode()
+    ).hexdigest()
+else:
+    _phash = hashlib.md5(
+        f"{n_candles}:{start_price}:{drift}:{volatility}:{seed}".encode()
+    ).hexdigest()
+
+if _phash != st.session_state.get("llm_params_hash", ""):
+    st.session_state["llm_last_decision"] = None
+    st.session_state["llm_params_hash"] = _phash
 
 # P3-11: Fetch second GBM path (normalised)
 ohlcv_b: pd.DataFrame | None = None
@@ -466,21 +492,54 @@ if st.session_state.get("zoom_step") is not None:
     _hi   = min(len(ohlcv) - 1, _step + 5)
     fig.update_xaxes(range=[str(ohlcv.index[_lo]), str(ohlcv.index[_hi])])
 
+# ── LLM agent panel ───────────────────────────────────────────────────────────
+
+if st.session_state.get("agent_mode") == "Claude LLM agent (demo)":
+    _last = st.session_state.get("llm_last_decision")
+    _badge_col, _reason_col = st.columns([1, 4])
+    with _badge_col:
+        if _last:
+            _action = _last.get("type", "hold")
+            _color  = TV_GREEN if _action == "buy" else TV_RED if _action == "sell" else TV_MUTED
+            st.markdown(
+                f'<div style="background:{_color};color:#fff;font-size:13px;font-weight:700;'
+                f'padding:6px 14px;border-radius:4px;text-align:center;letter-spacing:1px;">'
+                f'{_action.upper()}</div>',
+                unsafe_allow_html=True,
+            )
+        else:
+            st.markdown(
+                '<div style="background:#2a2e39;color:#787b86;font-size:12px;'
+                'padding:6px 14px;border-radius:4px;text-align:center;">—</div>',
+                unsafe_allow_html=True,
+            )
+    with _reason_col:
+        if _last:
+            st.markdown(
+                f'<p style="color:#d1d4dc;font-size:12px;margin:4px 0 0;">'
+                f'{_last.get("reasoning", "")}</p>',
+                unsafe_allow_html=True,
+            )
+        else:
+            st.markdown(
+                '<p style="color:#787b86;font-size:12px;font-style:italic;margin:4px 0 0;">'
+                "Click 'Get Claude\\'s decision' to analyse the current market</p>",
+                unsafe_allow_html=True,
+            )
+
 st.plotly_chart(fig, width="stretch", config={
     "displayModeBar": True, "displaylogo": False, "scrollZoom": True,
     "modeBarButtonsToRemove": ["select2d", "lasso2d", "autoScale2d"],
     "toImageButtonOptions": {"format": "png", "filename": "ewm_chart"},
 })
 
-# ── LLM agent decision ────────────────────────────────────────────────────────
+# ── LLM agent decision button ─────────────────────────────────────────────────
 
 if st.session_state.get("agent_mode") == "Claude LLM agent (demo)":
     if not st.session_state.get("llm_authenticated"):
         st.info("Enter the demo password in the sidebar to enable the LLM agent.")
     elif st.session_state.get("llm_calls_this_session", 0) >= 10:
-        st.warning(
-            "Session limit reached. `pip install ewm-core[llm]` to run locally."
-        )
+        st.warning("Session limit reached. `pip install ewm-core[llm]` to run locally.")
     else:
         try:
             from ewm_core.agents.llm_agent import LLMAgent  # noqa: PLC0415
@@ -495,35 +554,32 @@ if st.session_state.get("agent_mode") == "Claude LLM agent (demo)":
                 "volume":   float(ohlcv["volume"].iloc[-1]),
                 "position": "flat",
             }
-            if st.button("Get Claude's decision", key="llm_decide_btn"):
-                try:
-                    _api_key = st.secrets.get("ANTHROPIC_API_KEY")
-                except Exception:
-                    _api_key = None
-                try:
-                    _agent = LLMAgent(api_key=_api_key)
-                    _result = _agent.decide(_obs)
-                    st.session_state["llm_last_decision"] = _result
-                    st.session_state["llm_calls_this_session"] = (
-                        st.session_state.get("llm_calls_this_session", 0) + 1
-                    )
+            _thinking = st.session_state.get("llm_thinking", False)
+
+            if _thinking:
+                with st.spinner("Claude is thinking..."):
+                    try:
+                        _api_key = st.secrets.get("ANTHROPIC_API_KEY")
+                    except Exception:
+                        _api_key = None
+                    try:
+                        _agent = LLMAgent(api_key=_api_key)
+                        _result = _agent.decide(_obs)
+                        st.session_state["llm_last_decision"] = _result
+                        st.session_state["llm_calls_this_session"] = (
+                            st.session_state.get("llm_calls_this_session", 0) + 1
+                        )
+                    except Exception as exc:
+                        st.error(f"LLM call failed: {exc}")
+                    finally:
+                        st.session_state["llm_thinking"] = False
+                st.rerun()
+            else:
+                if st.button("Get Claude's decision", key="llm_decide_btn"):
+                    st.session_state["llm_thinking"] = True
                     st.rerun()
-                except Exception as exc:
-                    st.error(f"LLM call failed: {exc}")
         except ImportError:
             st.info(
                 "LLM agent not available in this deployment. "
                 "`pip install ewm-core[llm]` to enable."
             )
-
-    _last = st.session_state.get("llm_last_decision")
-    if _last:
-        _action = _last.get("type", "hold")
-        _color  = TV_GREEN if _action == "buy" else TV_RED if _action == "sell" else TV_MUTED
-        st.markdown(
-            f'<p style="font-size:13px;font-weight:600;margin-top:8px;">'
-            f'Claude\'s action: <span style="color:{_color};">{_action.upper()}</span></p>',
-            unsafe_allow_html=True,
-        )
-        with st.expander("Claude's reasoning", expanded=True):
-            st.write(_last.get("reasoning", "—"))
