@@ -25,6 +25,11 @@ from ewm_core.eval.run_evaluator import evaluate_run, load_run_artifacts
 from ewm_core.market.synthetic import generate_ohlcv
 
 init_session_state()
+
+if st.session_state.get("llm_thinking") and \
+   not st.session_state.get("_llm_call_in_progress"):
+    st.session_state["llm_thinking"] = False
+
 apply_theme()
 
 # Hidden title for AppTest compatibility
@@ -254,6 +259,7 @@ if use_live:
         ohlcv = _fetch_live(ticker, str(date_start), str(date_end))
     if ohlcv.empty:
         st.error(f"No data returned for {ticker}. Check the ticker symbol.")
+        st.session_state["llm_thinking"] = False
         st.stop()
     chart_title = f"{ticker}  ·  {date_start} → {date_end}"
 else:
