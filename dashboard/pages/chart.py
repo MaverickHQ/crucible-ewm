@@ -25,11 +25,6 @@ from ewm_core.eval.run_evaluator import evaluate_run, load_run_artifacts
 from ewm_core.market.synthetic import generate_ohlcv
 
 init_session_state()
-
-if st.session_state.get("llm_thinking") and \
-   not st.session_state.get("_llm_call_in_progress"):
-    st.session_state["llm_thinking"] = False
-
 apply_theme()
 
 # Hidden title for AppTest compatibility
@@ -209,14 +204,25 @@ with st.sidebar:
 
 @st.cache_data(ttl=300)
 def _fetch_live(ticker: str, start: str, end: str) -> pd.DataFrame:
-    raw = yf.download(ticker, start=start, end=end, auto_adjust=True, progress=False)
-    if raw.empty:
+    try:
+        raw = yf.download(
+            ticker, start=start, end=end,
+            auto_adjust=True, progress=False,
+            show_errors=False,
+        )
+    except Exception:
+        return pd.DataFrame()
+    if raw is None or raw.empty:
         return pd.DataFrame()
     if isinstance(raw.columns, pd.MultiIndex):
         raw.columns = [c[0].lower() for c in raw.columns]
     else:
         raw.columns = [c.lower() for c in raw.columns]
-    return raw[["open", "high", "low", "close", "volume"]]
+    needed = ["open", "high", "low", "close", "volume"]
+    missing = [c for c in needed if c not in raw.columns]
+    if missing:
+        return pd.DataFrame()
+    return raw[needed].dropna()
 
 
 @st.cache_data
@@ -258,7 +264,12 @@ if use_live:
     with st.spinner(f"Fetching {ticker} …"):
         ohlcv = _fetch_live(ticker, str(date_start), str(date_end))
     if ohlcv.empty:
-        st.error(f"No data returned for {ticker}. Check the ticker symbol.")
+        st.error(
+            f"Could not fetch data for '{ticker}'. "
+            "Yahoo Finance may be rate-limiting Streamlit Cloud. "
+            "Try a different ticker (e.g. MSFT, TSLA, BTC-USD) "
+            "or switch to synthetic data."
+        )
         st.session_state["llm_thinking"] = False
         st.stop()
     chart_title = f"{ticker}  ·  {date_start} → {date_end}"
