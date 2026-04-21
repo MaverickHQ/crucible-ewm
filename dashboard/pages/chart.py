@@ -73,6 +73,10 @@ with st.sidebar:
                 )
             else:
                 st.error("Session limit reached (10/10). `pip install ewm-core[llm]` to run locally.")
+            if _calls < 10:
+                if st.button("Get Claude's decision", key="llm_decide_btn"):
+                    st.session_state["llm_thinking"] = True
+                    st.rerun()
 
     st.divider()
     st.subheader("Data source")
@@ -574,10 +578,6 @@ if st.session_state.get("agent_mode") == "Claude LLM agent (demo)":
                     finally:
                         st.session_state["llm_thinking"] = False
                 st.rerun()
-            else:
-                if st.button("Get Claude's decision", key="llm_decide_btn"):
-                    st.session_state["llm_thinking"] = True
-                    st.rerun()
         except ImportError:
             st.info(
                 "LLM agent not available in this deployment. "
