@@ -74,6 +74,10 @@ with st.sidebar:
             else:
                 st.error("Session limit reached (10/10). `pip install ewm-core[llm]` to run locally.")
             if _calls < 10:
+                _ticker_missing = (
+                    st.session_state.get("use_live", False)
+                    and not st.session_state.get("ticker", "").strip()
+                )
                 def _trigger_llm():
                     st.session_state["llm_thinking"] = True
 
@@ -81,14 +85,21 @@ with st.sidebar:
                     "Get Claude's decision",
                     key="llm_decide_btn",
                     on_click=_trigger_llm,
+                    disabled=_ticker_missing,
                 )
+                if _ticker_missing:
+                    st.caption("Enter a ticker above to enable.")
 
     st.divider()
     st.subheader("Data source")
     use_live = st.toggle("Live data (yfinance)", key="use_live")
 
     if use_live:
-        ticker = st.text_input("Ticker", key="ticker").strip().upper()
+        ticker = st.text_input(
+            "Ticker",
+            key="ticker",
+            placeholder="e.g. AMZN, MSFT, TSLA",
+        ).strip().upper()
 
         # P3-12: Date range picker for live data
         st.subheader("Date range")
