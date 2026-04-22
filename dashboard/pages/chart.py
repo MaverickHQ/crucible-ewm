@@ -209,9 +209,12 @@ with st.sidebar:
 
 @st.cache_data(ttl=300)
 def _fetch_live(ticker: str, start: str, end: str) -> pd.DataFrame:
-    raw = yf.download(ticker, start=start, end=end,
-                      auto_adjust=True, progress=False)
-    if raw.empty:
+    try:
+        raw = yf.download(ticker, start=start, end=end,
+                          auto_adjust=True, progress=False)
+    except Exception:
+        return pd.DataFrame()
+    if raw is None or raw.empty:
         return pd.DataFrame()
     if isinstance(raw.columns, pd.MultiIndex):
         raw.columns = [c[0].lower() for c in raw.columns]
