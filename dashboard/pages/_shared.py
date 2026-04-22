@@ -29,7 +29,7 @@ GBM_PRESETS: dict[str, dict | None] = {
 # ── Session state defaults ─────────────────────────────────────────────────────
 SS_DEFAULTS: dict = {
     "use_live":           False,
-    "ticker":             "AAPL",
+    "ticker":             "AMZN",
     "n_candles":          200,
     "start_price":        100.0,
     "drift":              0.0003,

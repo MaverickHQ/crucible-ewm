@@ -261,8 +261,8 @@ if use_live:
     if ohlcv.empty:
         st.error(
             f"Could not fetch data for '{ticker}'. "
-            "Yahoo Finance may be rate-limiting Streamlit Cloud. "
-            "Try a different ticker (e.g. MSFT, TSLA, BTC-USD) "
+            "Note: AAPL is rate-limited on Streamlit Cloud. "
+            "Try AMZN, MSFT, TSLA, or BTC-USD instead, "
             "or switch to synthetic data."
         )
         st.session_state["llm_thinking"] = False
