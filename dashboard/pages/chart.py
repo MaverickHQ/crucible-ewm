@@ -74,9 +74,14 @@ with st.sidebar:
             else:
                 st.error("Session limit reached (10/10). `pip install ewm-core[llm]` to run locally.")
             if _calls < 10:
-                if st.button("Get Claude's decision", key="llm_decide_btn"):
+                def _trigger_llm():
                     st.session_state["llm_thinking"] = True
-                    st.rerun()
+
+                st.button(
+                    "Get Claude's decision",
+                    key="llm_decide_btn",
+                    on_click=_trigger_llm,
+                )
 
     st.divider()
     st.subheader("Data source")
