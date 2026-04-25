@@ -66,6 +66,12 @@ def init_session_state() -> None:
             st.session_state[k] = v
 
 
+def ensure_ticker_default() -> None:
+    """Ensure ticker is never empty in session state."""
+    if not st.session_state.get("ticker", "").strip():
+        st.session_state["ticker"] = "AMZN"
+
+
 def get_colors() -> dict:
     dark = bool(st.session_state.get("dark_mode", True))
     return {

@@ -18,13 +18,14 @@ from plotly.subplots import make_subplots
 from _shared import (
     GBM_PRESETS, SS_DEFAULTS, TV_BORDER, TV_GREEN, TV_MUTED, TV_RED, TV_TEXT,
     apply_theme, compute_metrics, compute_run_return, compute_trade_summary,
-    diff_manifest_keys, extract_pnl, extract_signals, get_colors, init_session_state,
-    load_manifest, load_trajectory, style_trajectory_df,
+    diff_manifest_keys, ensure_ticker_default, extract_pnl, extract_signals,
+    get_colors, init_session_state, load_manifest, load_trajectory, style_trajectory_df,
 )
 from ewm_core.eval.run_evaluator import evaluate_run, load_run_artifacts
 from ewm_core.market.synthetic import generate_ohlcv
 
 init_session_state()
+ensure_ticker_default()
 apply_theme()
 
 # Hidden title for AppTest compatibility
