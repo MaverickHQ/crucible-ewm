@@ -94,14 +94,19 @@ with st.sidebar:
     st.subheader("Data source")
     use_live = st.toggle("Live data (yfinance)", key="use_live")
 
-    ticker = st.session_state.get("ticker", "AMZN") or "AMZN"
+    ticker = "AMZN"
 
     if use_live:
-        ticker = st.text_input(
+        _ticker_input = st.text_input(
             "Ticker",
             key="ticker",
             placeholder="e.g. AMZN, MSFT, TSLA",
         ).strip().upper()
+        if _ticker_input:
+            ticker = _ticker_input
+        else:
+            ticker = "AMZN"
+            st.session_state["ticker"] = "AMZN"
 
         # P3-12: Date range picker for live data
         st.subheader("Date range")
