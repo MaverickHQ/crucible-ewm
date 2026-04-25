@@ -220,12 +220,16 @@ with st.sidebar:
 
 @st.cache_data(ttl=300)
 def _fetch_live(ticker: str, start: str, end: str) -> pd.DataFrame:
-    try:
-        raw = yf.download(ticker, start=start, end=end,
-                          auto_adjust=True, progress=False)
-    except Exception:
-        return pd.DataFrame()
-    if raw is None or raw.empty:
+    for attempt in range(2):
+        try:
+            raw = yf.download(ticker, start=start, end=end,
+                              auto_adjust=True, progress=False)
+            if raw is not None and not raw.empty:
+                break
+        except Exception:
+            if attempt == 1:
+                return pd.DataFrame()
+    else:
         return pd.DataFrame()
     if isinstance(raw.columns, pd.MultiIndex):
         raw.columns = [c[0].lower() for c in raw.columns]
@@ -573,7 +577,7 @@ if st.session_state.get("agent_mode") == "Claude LLM agent (demo)":
     else:
         try:
             from ewm_core.agents.llm_agent import LLMAgent  # noqa: PLC0415
-            _symbol = st.session_state.get("ticker", "SYN") if use_live else "SYN"
+            _symbol = ticker if (use_live and ticker) else "SYN"
             _sma5   = float(ohlcv["close"].rolling(5).mean().iloc[-1])
             _sma10  = float(ohlcv["close"].rolling(10).mean().iloc[-1])
             _obs = {
