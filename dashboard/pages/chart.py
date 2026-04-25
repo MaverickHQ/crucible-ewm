@@ -94,6 +94,8 @@ with st.sidebar:
     st.subheader("Data source")
     use_live = st.toggle("Live data (yfinance)", key="use_live")
 
+    ticker = st.session_state.get("ticker", "AMZN") or "AMZN"
+
     if use_live:
         ticker = st.text_input(
             "Ticker",
