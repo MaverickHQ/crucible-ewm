@@ -84,7 +84,7 @@ This series follows directly from [Beyond Tokens](https://github.com/MaverickHQ/
 
 | Essay | What it covers |
 |---|---|
-| [What the dashboard reveals](ESSAY_URL_PLACEHOLDER) | Phase 1 bridge — making agent behaviour visible |
+| [What the dashboard reveals](https://harveygill.substack.com/p/decisions-that-dont-disappear?r=3u3ngq) | Phase 1 bridge — making agent behaviour visible |
 | [From Theory to Runtime](https://harveygill.substack.com/p/building-the-runtime-for-agent-based) | The Agent Runtime goes live on AWS — execution, artifacts, persistence, telemetry |
 | [Evaluation Is a Primitive, Not a Report](https://harveygill.substack.com/p/evaluation-is-a-primitive-not-a-report) | Structural validation that turns runs into trusted evidence |
 | [Tools Return Results. Environments Change the World.](https://harveygill.substack.com/p/tools-skills-and-the-missing-layer) | Why environments are the missing layer in most agent architectures |
