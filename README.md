@@ -11,8 +11,11 @@ This repository accompanies the **[Executable World Models](https://harveygill.s
 ## Install
 
 ```
+# Core infrastructure only
 pip install ewm-core
-pip install ewm-core[llm]   # includes Anthropic SDK for LLM agent
+
+# With LLM agent (requires ANTHROPIC_API_KEY)
+pip install ewm-core[llm]
 ```
 
 ## Agent modes
@@ -43,9 +46,16 @@ decision = agent.decide({
 ## Quick start
 
 ```python
+# Rule-based agent (no API key needed)
 from ewm_core.environment import MarketPathEnvironment
 from ewm_core.eval import evaluate_artifact
 from ewm_core.learning import build_evidence_policy
+
+# LLM agent (requires ANTHROPIC_API_KEY)
+from ewm_core.agents.llm_agent import LLMAgent
+agent = LLMAgent(api_key=os.environ["ANTHROPIC_API_KEY"])
+decision = agent.decide(observation)
+# {"type": "buy", "symbol": "AMZN", "reasoning": "..."}
 ```
 
 ---
@@ -84,7 +94,7 @@ This series follows directly from [Beyond Tokens](https://github.com/MaverickHQ/
 
 | Essay | What it covers |
 |---|---|
-| [What the dashboard reveals](https://harveygill.substack.com/p/decisions-that-dont-disappear?r=3u3ngq) | Phase 1 bridge — making agent behaviour visible |
+| [Decisions That Don't Disappear](https://harveygill.substack.com/p/decisions-that-dont-disappear?r=3u3ngq) | Claude in the agent slot — inspectable decisions, auditable artifacts, and why this is different from any other LLM trading agent |
 | [From Theory to Runtime](https://harveygill.substack.com/p/building-the-runtime-for-agent-based) | The Agent Runtime goes live on AWS — execution, artifacts, persistence, telemetry |
 | [Evaluation Is a Primitive, Not a Report](https://harveygill.substack.com/p/evaluation-is-a-primitive-not-a-report) | Structural validation that turns runs into trusted evidence |
 | [Tools Return Results. Environments Change the World.](https://harveygill.substack.com/p/tools-skills-and-the-missing-layer) | Why environments are the missing layer in most agent architectures |
@@ -241,6 +251,7 @@ outputs/learning/            experiment datasets and policy outputs
 3. Run `python3 scripts/demo_policy_guided_trading_agent.py` and observe decisions being guided by prior evidence
 4. Open any `decision.json` artifact — the decision, trajectory, and state deltas are all explicit and inspectable
 5. The model does not change. The system improves through architecture.
+6. Set `ANTHROPIC_API_KEY` and run `python3 scripts/demo_llm_agent.py` — observe Claude reasoning about market observations and producing inspectable decisions recorded in the same artifact structure as the deterministic agent.
 
 ---
 
@@ -255,8 +266,8 @@ ewm-core is the foundation layer of the Crucible research project — three repo
 
 ## Project status
 
-Current milestone: **v0.8.5.1 — Policy-Guided Agent**
+Current milestone: **Phase 2 complete — LLMAgent**
 
-The learning loop is complete. Experiments produce evidence. Evidence becomes policy. Policy informs future decisions.
+The infrastructure layer is complete and the agent slot is operational. The deterministic agent and Claude LLM agent both run on the same artifact, evaluation, and experiment infrastructure.
 
-The next step is replacing the deterministic `MarketPathEnvironment` with a learned world model — at which point the environment itself becomes a predictive system rather than a replay. The experimental architecture remains unchanged.
+Phase 3 introduces the player-coach architecture — a PlayerAgent that proposes actions and a CoachAgent that evaluates and rejects them before execution proceeds. The infrastructure is unchanged. The agent layer becomes adversarial.
